@@ -1,6 +1,8 @@
 package ar.edu.itba.pdc.proxy;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -43,8 +45,18 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		// Retrieve data read earlier
 		ByteBuffer buf = (ByteBuffer) key.attachment();
 		buf.flip(); // Prepare buffer for writing
-		SocketChannel clntChan = (SocketChannel) key.channel();
-		clntChan.write(buf);
+//		SocketChannel clntChan = (SocketChannel) key.channel();
+		SocketChannel dumpChan = SocketChannel.open();
+		dumpChan.configureBlocking(false);
+//		HttpRequest req = MyParser.parse(buf);
+//		if (!dumpChan.connect(new InetSocketAddress(req.getHost(), connection.getPort()))) {
+		if (!dumpChan.connect(new InetSocketAddress("localhost", 9091))) {
+            while (!dumpChan.finishConnect()) {
+                System.out.println("conectando"); // Do something else
+            }
+        }
+		dumpChan.write(buf);
+//		clntChan.write(buf);
 		if (!buf.hasRemaining()) { // Buffer completely written?
 			// Nothing left, so no longer interested in writes
 			key.interestOps(SelectionKey.OP_READ);

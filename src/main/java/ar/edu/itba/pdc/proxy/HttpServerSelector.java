@@ -13,20 +13,20 @@ public class HttpServerSelector {
     private static final int TIMEOUT = 3000; // Wait timeout (milliseconds)
 
     public static void main(String[] args) throws IOException {
-        if (args.length < 1) { // Test for correct # of args
-            throw new IllegalArgumentException("Parameter(s): <Port> ...");
-        }
+//        if (args.length < 1) { // Test for correct # of args
+//            throw new IllegalArgumentException("Parameter(s): <Port> ...");
+//        }
         // Create a selector to multiplex listening sockets and connections
         Selector selector = Selector.open();
         // Create listening socket channel for each port and register selector
-        for (String arg : args) {
+//        for (String arg : args) {
             ServerSocketChannel listnChannel = ServerSocketChannel.open();
-            listnChannel.socket().bind(new InetSocketAddress(Integer.parseInt(arg)));
+            listnChannel.socket().bind(new InetSocketAddress(9090));
             listnChannel.configureBlocking(false); // must be nonblocking to
                                                    // register
             // Register selector with channel. The returned key is ignored
             listnChannel.register(selector, SelectionKey.OP_ACCEPT);
-        }
+//        }
         // Create a handler that will implement the protocol
         TCPProtocol protocol = new HttpSelectorProtocol(BUFSIZE);
         while (true) { // Run forever, processing available I/O operations
