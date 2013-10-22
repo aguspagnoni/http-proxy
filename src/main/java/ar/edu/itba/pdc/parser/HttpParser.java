@@ -1,14 +1,13 @@
 package ar.edu.itba.pdc.parser;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 
 import ar.edu.itba.pdc.exceptions.BadSyntaxException;
 
 public class HttpParser {
-	private List<String> headersHTTP = new ArrayList<String>();
-	private List<String> methodsHTTP = new ArrayList<String>();
+	private HashSet<String> headersHTTP = new HashSet<String>();
+	private HashSet<String> methodsHTTP = new HashSet<String>();
 
 	private static HttpParser instance;
 
@@ -30,44 +29,37 @@ public class HttpParser {
 		return instance;
 	}
 
-	public HTTPHeaders parseHeaders(ByteBuffer readBuffer)
+	public HTTPRequest parseHeaders(ByteBuffer readBuffer)
 			throws BadSyntaxException {
-		int i = 0, j = 0;
-		HTTPHeaders httpHeaders = new HTTPHeaders();
+		
+		HTTPRequest httpHeaders = new HTTPRequest();
 
-		String fullLine = new String(readBuffer.array()).substring(0,
+		//TODO podria no ser todo el contenido, habria que ver que pasa cuando viene segmentado el request ==> estados
+		String fullContent = new String(readBuffer.array()).substring(0,
 				readBuffer.array().length);
-		for (String header : fullLine.split(System.getProperty("line.separator"))) {
-			if (i == 0) {
-				for (String firstLine : header.split(" ")) {
-					if (j == 0) {
-						methodsHTTP.contains(firstLine.toLowerCase());
-						httpHeaders.setHttpmethod(firstLine.toLowerCase());
-					} else if (j == 1) {
-						httpHeaders.setURI(firstLine.toLowerCase());
-					} else if (j == 2) {
-						httpHeaders.setVersion(firstLine.toLowerCase());
-
-					
-					}
-					j++;
+		String[] lines = fullContent.split(System.getProperty("line.separator"));
+		String[] firstLine = lines[0].split(" ");
+		
+		if (methodsHTTP.contains(firstLine[0].toLowerCase())) {	
+			httpHeaders.setHttpmethod(firstLine[0].toLowerCase());
+			httpHeaders.setURI(firstLine[1].toLowerCase());
+			httpHeaders.setVersion(firstLine[2].toLowerCase());
+			
+			for (int i = 1; i < lines.length; i++) {
+			
+				String[] kv = lines[i].trim().toLowerCase().split(":");
+				if (headersHTTP.contains(kv[0])) {
+					if (kv.length == 1) {
+						httpHeaders.addHeader(kv[0], "");
+					} else if (kv.length > 2) {
+						//TODO ver que pasa en caso de key:value:otracosa  ,ignoramos otracosa?excepcion? ==> ver rfc2616
+					} else // == 2
+						httpHeaders.addHeader(kv[0], kv[1]);
 				}
-
-			} else {
-				String[] aux = header.toLowerCase().split(":");
-				String trimmed = aux[0].trim();
-				if (headersHTTP.contains(trimmed)) {
-
-					if (aux.length > 1) {
-						httpHeaders.getHeaders().put(trimmed, aux[1].trim());
-					} else {
-						httpHeaders.getHeaders().put(trimmed, "");
-					}
-				}
-
 			}
-			i++;
+			return httpHeaders;
 		}
-		return httpHeaders;
+		//no es soportado el metodo ==> TODO devolver excepcion (cn codigo de unsupported de http)
+		return null;
 	}
 }
