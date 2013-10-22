@@ -1,22 +1,21 @@
 package ar.edu.itba.pdc.proxy;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-
-import javax.xml.transform.URIResolver;
+import java.util.HashSet;
 
 import ar.edu.itba.pdc.parser.HTTPRequest;
 import ar.edu.itba.pdc.parser.HttpParser;
 
 public class HttpSelectorProtocol implements TCPProtocol {
 	private int bufSize; // Size of I/O buffer
-
+	private HashSet<SocketChannel> proxyconnections = new HashSet<SocketChannel>();
+	
 	public HttpSelectorProtocol(int bufSize) {
 		this.bufSize = bufSize;
 	}
@@ -26,6 +25,7 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		clntChan.configureBlocking(false); // Must be nonblocking to register
 		// Register the selector with new channel for read and attach byte
 		// buffer
+		
 		clntChan.register(key.selector(), SelectionKey.OP_READ,
 				ByteBuffer.allocate(bufSize));
 	}
@@ -59,29 +59,23 @@ public class HttpSelectorProtocol implements TCPProtocol {
 //		System.out.println("Method: " + httpheaders.getHttpmethod());
 //		System.out.println("Extra headers:" + httpheaders.getHeaders());
 		
-		/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
-		URI uri = URI.create(httpheaders.getURI());
-		SocketChannel responseChannel = SocketChannel.open();
-		responseChannel.configureBlocking(false);
-		responseChannel.register(key.selector(), SelectionKey.OP_READ, ByteBuffer.allocate(bufSize));
-
-		int port = uri.getPort() == -1 ? 80 : uri.getPort();
-		if (!responseChannel.connect(new InetSocketAddress(uri.getHost(), port))) {
-			while (!responseChannel.finishConnect()) {
-				System.out.print(".");
+//		if (!) {
+			/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
+			URI uri = URI.create(httpheaders.getURI());
+			SocketChannel responseChannel = SocketChannel.open();
+			responseChannel.configureBlocking(false);
+			responseChannel.register(key.selector(), SelectionKey.OP_READ, ByteBuffer.allocate(bufSize));
+	
+			int port = uri.getPort() == -1 ? 80 : uri.getPort();
+			if (!responseChannel.connect(new InetSocketAddress(uri.getHost(), port))) {
+				while (!responseChannel.finishConnect()) {
+					System.out.print(".");
+				}
 			}
-		}
+//		}
+		
 		
 //		buf.flip(); // Prepare buffer for writing
-//		// SocketChannel clntChan = (SocketChannel) key.channel();
-//		SocketChannel dumpChan = SocketChannel.open();
-//		dumpChan.configureBlocking(false);
-//		if (!dumpChan.connect(new InetSocketAddress("localhost", 9091))) {
-//			while (!dumpChan.finishConnect()) {
-//				System.out.println("conectando"); // Do someth-ing else
-//			}
-//		}
-//		b.flip();
 //		dumpChan.write(b);
 //		//dumpChan.write(buf);
 //		// clntChan.write(buf);

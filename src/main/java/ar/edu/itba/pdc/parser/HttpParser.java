@@ -48,14 +48,14 @@ public class HttpParser {
 			for (int i = 1; i < lines.length; i++) {
 			
 				String[] kv = lines[i].trim().toLowerCase().split(":");
-				if (headersHTTP.contains(kv[0])) {
+//				if (headersHTTP.contains(kv[0])) {
 					if (kv.length == 1) {
 						httpHeaders.addHeader(kv[0], "");
 					} else if (kv.length > 2) {
 						//TODO ver que pasa en caso de key:value:otracosa  ,ignoramos otracosa?excepcion? ==> ver rfc2616
 					} else // == 2
 						httpHeaders.addHeader(kv[0], kv[1]);
-				}
+//				}
 			}
 			return httpHeaders;
 		}
