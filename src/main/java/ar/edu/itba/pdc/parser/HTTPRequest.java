@@ -1,19 +1,20 @@
 package ar.edu.itba.pdc.parser;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class HTTPHeaders {
+public class HTTPRequest extends Message {
 
 	private String httpmethod;
 	private String URI;
 	private String version;
-	private Map<String, String> headers = new HashMap<String, String>();
+	//hereda el mapa
+	//hereda el body ==> pensar para el POST
 
-	public HTTPHeaders() {
+	//no tiene sentido poder instanciar un request vacio.. pronto a eliminar.
+	public HTTPRequest() {
 	}
 
-	public HTTPHeaders(String httpmethod, String host, String version) {
+	public HTTPRequest(String httpmethod, String host, String version) {
 		this.httpmethod = httpmethod;
 		this.URI = host;
 		this.version = version;
@@ -47,5 +48,7 @@ public class HTTPHeaders {
 		return headers;
 	}
 
-
+	protected void addHeader(String key, String value) {
+		headers.put(key, value);
+	}
 }

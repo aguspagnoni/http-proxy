@@ -1,22 +1,21 @@
 package ar.edu.itba.pdc.proxy;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.HashSet;
 
-import javax.xml.transform.URIResolver;
-
-import ar.edu.itba.pdc.parser.HTTPHeaders;
+import ar.edu.itba.pdc.parser.HTTPRequest;
 import ar.edu.itba.pdc.parser.HttpParser;
 
 public class HttpSelectorProtocol implements TCPProtocol {
 	private int bufSize; // Size of I/O buffer
-
+	private HashSet<SocketChannel> proxyconnections = new HashSet<SocketChannel>();
+	
 	public HttpSelectorProtocol(int bufSize) {
 		this.bufSize = bufSize;
 	}
@@ -26,6 +25,7 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		clntChan.configureBlocking(false); // Must be nonblocking to register
 		// Register the selector with new channel for read and attach byte
 		// buffer
+		
 		clntChan.register(key.selector(), SelectionKey.OP_READ,
 				ByteBuffer.allocate(bufSize));
 	}
@@ -49,53 +49,40 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		 * channel not closed).
 		 */
 		// Retrieve data read earlier
+		
+		/* ----------- PARSEO DE REQ/RESP ----------- */
 		ByteBuffer buf = (ByteBuffer) key.attachment();
 		HttpParser parser = HttpParser.getInstance();
-		// System.out.println(buf.array());
-		HTTPHeaders httpheaders = parser.parseHeaders(buf);
-		System.out.println("URI: " + httpheaders.getURI());
-		System.out.println("Version: " + httpheaders.getVersion());
-		System.out.println("Method: " + httpheaders.getHttpmethod());
-		System.out.println("Extra headers:" + httpheaders.getHeaders());
-		URI uri = URI.create(httpheaders.getURI());
-		SocketChannel responseChannel = SocketChannel.open();
-		responseChannel.configureBlocking(false);
-		responseChannel.register(key.selector(), SelectionKey.OP_READ);
-	//	System.out.println("IP" + uri.getHost());
-	//	System.out.println("port" + uri.getPort());  
-
-		if (!responseChannel.connect(new InetSocketAddress(uri.getHost(), 80))) {
-			while (!responseChannel.finishConnect()) {
-				System.out.print("."); // Do something
-																// else
-			}
-		}
-		ByteBuffer b = ByteBuffer.allocate(5000);
-		responseChannel.read(b);
-		String fullLine = new String(b.array()).substring(0,
-				b.array().length);
-		System.out.println(fullLine + "ee");
+		HTTPRequest httpheaders = parser.parseHeaders(buf);
+//		System.out.println("URI: " + httpheaders.getURI());
+//		System.out.println("Version: " + httpheaders.getVersion());
+//		System.out.println("Method: " + httpheaders.getHttpmethod());
+//		System.out.println("Extra headers:" + httpheaders.getHeaders());
 		
-		buf.flip(); // Prepare buffer for writing
-		// SocketChannel clntChan = (SocketChannel) key.channel();
-		SocketChannel dumpChan = SocketChannel.open();
-		dumpChan.configureBlocking(false);
-		// HttpRequest req = MyParser.parse(buf);
-		// if (!dumpChan.connect(new InetSocketAddress(req.getHost(),
-		// connection.getPort()))) {
-		if (!dumpChan.connect(new InetSocketAddress("localhost", 9091))) {
-			while (!dumpChan.finishConnect()) {
-				System.out.println("conectando"); // Do someth-ing else
+//		if (!) {
+			/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
+			URI uri = URI.create(httpheaders.getURI());
+			SocketChannel responseChannel = SocketChannel.open();
+			responseChannel.configureBlocking(false);
+			responseChannel.register(key.selector(), SelectionKey.OP_READ, ByteBuffer.allocate(bufSize));
+	
+			int port = uri.getPort() == -1 ? 80 : uri.getPort();
+			if (!responseChannel.connect(new InetSocketAddress(uri.getHost(), port))) {
+				while (!responseChannel.finishConnect()) {
+					System.out.print(".");
+				}
 			}
-		}
-		b.flip();
-		dumpChan.write(b);
-		//dumpChan.write(buf);
-		// clntChan.write(buf);
-		if (!b.hasRemaining()) { // Buffer completely written?
-			// Nothing left, so no longer interested in writes
-			key.interestOps(SelectionKey.OP_READ);
-		}
-		b.compact(); // Make room for more data to be read in
+//		}
+		
+		
+//		buf.flip(); // Prepare buffer for writing
+//		dumpChan.write(b);
+//		//dumpChan.write(buf);
+//		// clntChan.write(buf);
+//		if (!b.hasRemaining()) { // Buffer completely written?
+//			// Nothing left, so no longer interested in writes
+//			key.interestOps(SelectionKey.OP_READ);
+//		}
+//		b.compact(); // Make room for more data to be read in
 	}
 }
