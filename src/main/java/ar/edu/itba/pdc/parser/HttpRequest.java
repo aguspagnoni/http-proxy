@@ -2,7 +2,7 @@ package ar.edu.itba.pdc.parser;
 
 import java.util.Map;
 
-public class HTTPRequest extends Message {
+public class HttpRequest extends Message {
 
 	private String httpmethod;
 	private String URI;
@@ -11,10 +11,10 @@ public class HTTPRequest extends Message {
 	//hereda el body ==> pensar para el POST
 
 	//no tiene sentido poder instanciar un request vacio.. pronto a eliminar.
-	public HTTPRequest() {
+	public HttpRequest() {
 	}
 
-	public HTTPRequest(String httpmethod, String host, String version) {
+	public HttpRequest(String httpmethod, String host, String version) {
 		this.httpmethod = httpmethod;
 		this.URI = host;
 		this.version = version;
