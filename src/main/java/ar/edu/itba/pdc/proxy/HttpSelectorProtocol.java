@@ -37,9 +37,21 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		ProxyConnection conn = (ProxyConnection) key.attachment();
 
 		ByteBuffer buf = conn.getBuffer(channel);
-		long bytesRead = channel.read(buf);
+		long bytesRead = 0;
+		try {
+			bytesRead = channel.read(buf);
+		} catch (IOException e) {
+			System.out.println("fallo el read");
+			return;
+		}
 		if (bytesRead == -1) { // Did the other end close?
-			channel.close(); // ACA HAY QUE TENER EN CUENTA QUE SI LA CERRO EL SERVER, DEVOLVERIA MENOS 1, DESATTACHEARLO Y DECIRLE UQE NO TIENE CONEXION ASOCIADA ASI TIEN QUE CREAR UNA NUEVA YA QUE EL CLIENTE SE TIENTA A SEGUIR MANDANDO REQUESTS PORQUE TIENE UNA CONEXION ABIERTA, SI MURIO EL CLIENTE MATAR TODO.
+			if (conn.isClient(channel) && conn.getServer() != null) {
+				conn.getServer().close(); // close the server channel
+				channel.close();
+				key.attach(null); // de-reference the proxy connection as it is no longer useful
+			} else {
+				conn.resetServer();
+			}
 		} else if (bytesRead > 0) {
 			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
@@ -74,14 +86,19 @@ public class HttpSelectorProtocol implements TCPProtocol {
 			int port = uri.getPort() == -1 ? 80 : uri.getPort();
 			if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
 					port))) {
-				while (!serverchannel.finishConnect()) {
-					System.out.print(".");
+				try {
+					while (!serverchannel.finishConnect()) {
+						System.out.print(".");
+					}
+				} catch (Exception e) {
+					System.out.println("no se pudo terminar de conectar. probablemente un connection refused");
+					return;
 				}
 			}
 			conn.setServer(serverchannel);
 		}
 		
-		if (conn.handleWrite(channel)) {
+		if (channel != null && conn.handleWrite(channel)) {
 			SocketChannel receiver = conn.getOppositeChannel(channel);
 			receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver channel has something to write now
 			key.interestOps(SelectionKey.OP_READ); // Sender has finished writing

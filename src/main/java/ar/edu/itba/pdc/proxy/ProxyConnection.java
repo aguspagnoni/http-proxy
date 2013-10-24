@@ -7,7 +7,6 @@ import java.nio.channels.SocketChannel;
 import ar.edu.itba.pdc.parser.HttpParser;
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.Message;
-import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class ProxyConnection {
 
@@ -29,7 +28,7 @@ public class ProxyConnection {
 
 	public ProxyConnection() {
 	}
-	
+
 	public Message getMessage(SocketChannel sender) {
 		ByteBuffer buf = getBuffer(sender);
 		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
@@ -48,22 +47,28 @@ public class ProxyConnection {
 		byteswritten = receiver.write(buf);
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
 		buf.compact(); // Make room for more data to be read in
-		
-//		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
-//		if (!hasRemaining && parser.getState() == ParsingState.Body 
-//				&& byteswritten + incompleteMessage.length() - parser.getHeadersLength() 
-//				== Integer.valueOf(message.getHeaders().get("content-length"))) {
-//			incompleteMessage = ""; // reset the incomplete message
-//			return true; // finished writting httpmessage is complete
-//		}
-//		return false;
-		return true;	
+
+		// HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
+		// if (!hasRemaining && parser.getState() == ParsingState.Body
+		// && byteswritten + incompleteMessage.length() -
+		// parser.getHeadersLength()
+		// == Integer.valueOf(message.getHeaders().get("content-length"))) {
+		// incompleteMessage = ""; // reset the incomplete message
+		// return true; // finished writting httpmessage is complete
+		// }
+		// return false;
+		return true;
 
 	}
-	
+
 	public SocketChannel getOppositeChannel(SocketChannel channel) {
-		boolean isserver = channel.socket().getPort() == server.socket().getPort() && channel.socket().getInetAddress().getHostName().equals(server.socket().getInetAddress().getHostName());
-		return isserver ? client : server;
+		return isClient(channel) ? server : client;
+	}
+
+	public boolean isClient(SocketChannel channel) {
+		return channel.socket().getPort() == client.socket().getPort()
+				&& channel.socket().getInetAddress().getHostName()
+						.equals(client.socket().getInetAddress().getHostName());
 	}
 
 	public ByteBuffer getBuffer(SocketChannel channel) {
@@ -81,6 +86,13 @@ public class ProxyConnection {
 		serverport = server.socket().getPort();
 		serveraddr = server.socket().getInetAddress().getHostName();
 		serverbuf = ByteBuffer.allocate(bufSize);
+	}
+	
+	public void resetServer() {
+		server = null;
+		serverport = 0;
+		serveraddr = null;
+		serverbuf = null;
 	}
 
 	public SocketChannel getClient() {

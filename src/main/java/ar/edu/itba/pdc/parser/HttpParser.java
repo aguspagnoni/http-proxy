@@ -33,7 +33,7 @@ public class HttpParser {
 	public boolean hasFinished() {
 		if (message.headers.get("content-length") == null)
 			return true; // cable para ver si es un request
-		int contentlength = Integer.valueOf(message.headers.get("content-length"));
+		int contentlength = Integer.valueOf(message.headers.get("content-length").trim());
 		return headersLength != 0 && contentlength == message.body.length();
 	}
 	
