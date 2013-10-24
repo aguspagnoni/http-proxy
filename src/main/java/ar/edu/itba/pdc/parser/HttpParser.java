@@ -52,9 +52,11 @@ public class HttpParser {
 
 		String content = new String(readBuffer.array()).substring(0,
 				readBuffer.array().length);
+		
 		String[] lines = content.split(System.getProperty("line.separator"));
 		String[] firstLine = lines[0].split(" ");
-		
+		if (firstLine == null || firstLine.length == 0)
+			return null;
 		headersLength += lines[0].length(); // +2 por el \r\n ?? ver..
 		if (methodsHTTP.contains(firstLine[0].toLowerCase())) {	
 			message.setHttpmethod(firstLine[0].toLowerCase());

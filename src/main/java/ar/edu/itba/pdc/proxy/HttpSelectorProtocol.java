@@ -2,7 +2,7 @@ package ar.edu.itba.pdc.proxy;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.URI;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -39,7 +39,7 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		ByteBuffer buf = conn.getBuffer(channel);
 		long bytesRead = channel.read(buf);
 		if (bytesRead == -1) { // Did the other end close?
-			channel.close();
+			channel.close(); // ACA HAY QUE TENER EN CUENTA QUE SI LA CERRO EL SERVER, DEVOLVERIA MENOS 1, DESATTACHEARLO Y DECIRLE UQE NO TIENE CONEXION ASOCIADA ASI TIEN QUE CREAR UNA NUEVA YA QUE EL CLIENTE SE TIENTA A SEGUIR MANDANDO REQUESTS PORQUE TIENE UNA CONEXION ABIERTA, SI MURIO EL CLIENTE MATAR TODO.
 		} else if (bytesRead > 0) {
 			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
@@ -64,7 +64,9 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
 		SocketChannel serverchannel;
 		if ((serverchannel = conn.getServer()) == null) {
-			URI uri = URI.create(((HttpRequest) message).getURI());
+			URL uri = new URL(((HttpRequest) message).getURI());
+//			URI uri = URI.create((());
+			
 			serverchannel = SocketChannel.open();
 			serverchannel.configureBlocking(false);
 			serverchannel.register(key.selector(), SelectionKey.OP_READ, conn);
@@ -81,7 +83,7 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		
 		if (conn.handleWrite(channel)) {
 			SocketChannel receiver = conn.getOppositeChannel(channel);
-			receiver.register(key.selector(), SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn); // receiver channel has something to write now
+			receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver channel has something to write now
 			key.interestOps(SelectionKey.OP_READ); // Sender has finished writing
 		}
 	}

@@ -40,7 +40,7 @@ public class ProxyConnection {
 
 	public boolean handleWrite(SocketChannel sender) throws IOException {
 		SocketChannel receiver = getOppositeChannel(sender);
-		ByteBuffer buf = getBuffer(receiver);
+		ByteBuffer buf = getBuffer(sender);
 		int byteswritten = 0;
 		boolean hasRemaining = true;
 
@@ -49,15 +49,15 @@ public class ProxyConnection {
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
 		buf.compact(); // Make room for more data to be read in
 		
-		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
-		if (!hasRemaining && parser.getState() == ParsingState.Body 
-				&& byteswritten + incompleteMessage.length() - parser.getHeadersLength() 
-				== Integer.valueOf(message.getHeaders().get("content-length"))) {
-			incompleteMessage = ""; // reset the incomplete message
-			return true; // finished writting httpmessage is complete
-		}
-		return false;
-			
+//		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
+//		if (!hasRemaining && parser.getState() == ParsingState.Body 
+//				&& byteswritten + incompleteMessage.length() - parser.getHeadersLength() 
+//				== Integer.valueOf(message.getHeaders().get("content-length"))) {
+//			incompleteMessage = ""; // reset the incomplete message
+//			return true; // finished writting httpmessage is complete
+//		}
+//		return false;
+		return true;	
 
 	}
 	
