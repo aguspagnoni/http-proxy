@@ -8,6 +8,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Iterator;
 
+import ar.edu.itba.pdc.configuration.Configuration;
+
 public class HttpServerSelector {
     private static final int BUFSIZE = 256; // Buffer size (bytes)
     private static final int TIMEOUT = 3000; // Wait timeout (milliseconds)
@@ -21,7 +23,8 @@ public class HttpServerSelector {
         // Create listening socket channel for each port and register selector
 //        for (String arg : args) {
             ServerSocketChannel listnChannel = ServerSocketChannel.open();
-            listnChannel.socket().bind(new InetSocketAddress(9090));
+            Configuration config= new Configuration();
+            listnChannel.socket().bind(new InetSocketAddress(config.getPort()));
             listnChannel.configureBlocking(false); // must be nonblocking to
                                                    // register
             // Register selector with channel. The returned key is ignored
