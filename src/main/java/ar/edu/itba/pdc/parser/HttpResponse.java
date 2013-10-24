@@ -6,4 +6,7 @@ public class HttpResponse extends Message {
 	//hereda mapa de headers
 	//hereda el body
 
+	public int getCode(){
+		return code;
+	}
 }
