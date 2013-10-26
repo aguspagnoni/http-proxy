@@ -7,12 +7,10 @@ public class HttpRequest extends Message {
 	private String httpmethod;
 	private String URI;
 	private String version;
-	//hereda el mapa
-	//hereda el body ==> pensar para el POST
+	private String clientaddr;
 
-	//no tiene sentido poder instanciar un request vacio.. pronto a eliminar.
-	public HttpRequest() {
-	}
+	// hereda el mapa
+	// hereda el body ==> pensar para el POST
 
 	public HttpRequest(String httpmethod, String host, String version) {
 		this.httpmethod = httpmethod;
@@ -51,4 +49,10 @@ public class HttpRequest extends Message {
 	protected void addHeader(String key, String value) {
 		headers.put(key, value);
 	}
+
+	@Override
+	public String getClientaddr() {
+		return clientaddr;
+	}
+
 }

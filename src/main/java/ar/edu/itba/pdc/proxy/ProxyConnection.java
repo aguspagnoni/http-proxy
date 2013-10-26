@@ -3,9 +3,14 @@ package ar.edu.itba.pdc.proxy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.List;
 
+import ar.edu.itba.pdc.filters.Filter;
+import ar.edu.itba.pdc.filters.StatisticsFilter;
+import ar.edu.itba.pdc.filters.TransformationFilter;
 import ar.edu.itba.pdc.parser.HttpParser;
 import ar.edu.itba.pdc.parser.HttpRequest;
+import ar.edu.itba.pdc.parser.HttpResponse;
 import ar.edu.itba.pdc.parser.Message;
 
 public class ProxyConnection {
@@ -25,8 +30,15 @@ public class ProxyConnection {
 	private String incompleteMessage = "";
 
 	private HttpParser parser = new HttpParser();
+	private List<Filter> filterList;
 
 	public ProxyConnection() {
+		initialize();
+	}
+
+	private void initialize() {
+		filterList.add(StatisticsFilter.getInstance());
+		filterList.add(TransformationFilter.getInstance());
 	}
 
 	public Message getMessage(SocketChannel sender) {
@@ -46,6 +58,12 @@ public class ProxyConnection {
 		String content = new String(buf.array()).substring(0,
 				buf.array().length);
 		System.out.println(content);
+		HttpResponse r = new HttpResponse();
+		r.setBody(new String(buf.array()).substring(0, buf.array().length));
+		r.setClientaddr(clientaddr);
+		for (Filter f : filterList) {
+			f.filter(r);
+		}
 		byteswritten = receiver.write(buf);
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
 		buf.compact(); // Make room for more data to be read in
