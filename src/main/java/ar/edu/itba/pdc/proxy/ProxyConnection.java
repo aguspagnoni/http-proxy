@@ -11,7 +11,7 @@ import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class ProxyConnection {
 
-	private int bufSize = 5000; // Size of I/O buffer
+	private int bufSize = 500000; // Size of I/O buffer
 	private SocketChannel server;
 	private SocketChannel client;
 
@@ -29,7 +29,7 @@ public class ProxyConnection {
 
 	public ProxyConnection() {
 	}
-	
+
 	public Message getMessage(SocketChannel sender) {
 		ByteBuffer buf = getBuffer(sender);
 		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
@@ -38,17 +38,24 @@ public class ProxyConnection {
 		return null;
 	}
 
+<<<<<<< Updated upstream
 	public boolean handleWrite(SocketChannel sender) throws IOException {
 		SocketChannel receiver = getOppositeChannel(sender);
 		ByteBuffer buf = getBuffer(sender);
 		int byteswritten = 0;
 		boolean hasRemaining = true;
+=======
+	public boolean handleWrite(SocketChannel sender, int length)
+			throws IOException {
+>>>>>>> Stashed changes
 
-		buf.flip(); // Prepare buffer for writing
-		byteswritten = receiver.write(buf);
-		hasRemaining = buf.hasRemaining(); // Buffer completely written?
-		buf.compact(); // Make room for more data to be read in
+		if (length != 0) {
+			SocketChannel receiver = getOppositeChannel(sender);
+			ByteBuffer buf = getBuffer(sender); // the sender has the buffer
+			int byteswritten = 0;
+			boolean hasRemaining = true;
 		
+<<<<<<< Updated upstream
 //		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
 //		if (!hasRemaining && parser.getState() == ParsingState.Body 
 //				&& byteswritten + incompleteMessage.length() - parser.getHeadersLength() 
@@ -58,11 +65,37 @@ public class ProxyConnection {
 //		}
 //		return false;
 		return true;	
+=======
+			buf.flip(); // Prepare buffer for writing
+			String content = new String(buf.array()).substring(0,
+					buf.array().length);
+			System.out.println(content);
+			byteswritten = receiver.write(buf);
+			hasRemaining = buf.hasRemaining(); // Buffer completely written?
+			buf.compact(); // Make room for more data to be read in
+			return true;
+		}
+		return false;
+		// HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
+		// if (!hasRemaining && parser.getState() == ParsingState.Body
+		// && byteswritten + incompleteMessage.length() -
+		// parser.getHeadersLength()
+		// == length) {
+		// incompleteMessage = ""; // reset the incomplete message
+		// return true; // finished writting httpmessage is complete
+		// }
+		//
+		// }
+		// return false;
+>>>>>>> Stashed changes
 
 	}
-	
+
 	public SocketChannel getOppositeChannel(SocketChannel channel) {
-		boolean isserver = channel.socket().getPort() == server.socket().getPort() && channel.socket().getInetAddress().getHostName().equals(server.socket().getInetAddress().getHostName());
+		boolean isserver = channel.socket().getPort() == server.socket()
+				.getPort()
+				&& channel.socket().getInetAddress().getHostName()
+						.equals(server.socket().getInetAddress().getHostName());
 		return isserver ? client : server;
 	}
 
