@@ -7,7 +7,6 @@ import java.nio.channels.SocketChannel;
 import ar.edu.itba.pdc.parser.HttpParser;
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.Message;
-import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class ProxyConnection {
 
@@ -38,44 +37,18 @@ public class ProxyConnection {
 		return null;
 	}
 
-<<<<<<< Updated upstream
 	public boolean handleWrite(SocketChannel sender) throws IOException {
 		SocketChannel receiver = getOppositeChannel(sender);
 		ByteBuffer buf = getBuffer(sender);
 		int byteswritten = 0;
 		boolean hasRemaining = true;
-=======
-	public boolean handleWrite(SocketChannel sender, int length)
-			throws IOException {
->>>>>>> Stashed changes
-
-		if (length != 0) {
-			SocketChannel receiver = getOppositeChannel(sender);
-			ByteBuffer buf = getBuffer(sender); // the sender has the buffer
-			int byteswritten = 0;
-			boolean hasRemaining = true;
-		
-<<<<<<< Updated upstream
-//		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
-//		if (!hasRemaining && parser.getState() == ParsingState.Body 
-//				&& byteswritten + incompleteMessage.length() - parser.getHeadersLength() 
-//				== Integer.valueOf(message.getHeaders().get("content-length"))) {
-//			incompleteMessage = ""; // reset the incomplete message
-//			return true; // finished writting httpmessage is complete
-//		}
-//		return false;
-		return true;	
-=======
-			buf.flip(); // Prepare buffer for writing
-			String content = new String(buf.array()).substring(0,
-					buf.array().length);
-			System.out.println(content);
-			byteswritten = receiver.write(buf);
-			hasRemaining = buf.hasRemaining(); // Buffer completely written?
-			buf.compact(); // Make room for more data to be read in
-			return true;
-		}
-		return false;
+		buf.flip(); // Prepare buffer for writing
+		String content = new String(buf.array()).substring(0,
+				buf.array().length);
+		System.out.println(content);
+		byteswritten = receiver.write(buf);
+		hasRemaining = buf.hasRemaining(); // Buffer completely written?
+		buf.compact(); // Make room for more data to be read in
 		// HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
 		// if (!hasRemaining && parser.getState() == ParsingState.Body
 		// && byteswritten + incompleteMessage.length() -
@@ -87,8 +60,7 @@ public class ProxyConnection {
 		//
 		// }
 		// return false;
->>>>>>> Stashed changes
-
+		return true;
 	}
 
 	public SocketChannel getOppositeChannel(SocketChannel channel) {

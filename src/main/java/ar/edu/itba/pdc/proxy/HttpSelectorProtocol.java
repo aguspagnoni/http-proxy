@@ -81,7 +81,7 @@ public class HttpSelectorProtocol implements TCPProtocol {
 			conn.setServer(serverchannel);
 		}
 //		if (conn.handleWrite(channel, Integer.valueOf(((HttpRequest) message).getHeaders().get("content-length")))) {
-		if (conn.handleWrite(channel, 1)) {
+		if (conn.handleWrite(channel)) {
 			SocketChannel receiver = conn.getOppositeChannel(channel);
 			receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver channel has something to write now
 			key.interestOps(SelectionKey.OP_READ); // Sender has finished writing
