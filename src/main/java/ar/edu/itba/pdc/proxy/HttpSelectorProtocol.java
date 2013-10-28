@@ -13,6 +13,8 @@ import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.Message;
 
 public class HttpSelectorProtocol implements TCPProtocol {
+	
+	private static final int TIMEOUT = 5000; // Wait timeout (milliseconds)
 
 	private HashMap<SocketChannel, ProxyConnection> proxyconnections = new HashMap<SocketChannel, ProxyConnection>();
 
@@ -40,18 +42,27 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		long bytesRead = 0;
 		try {
 			bytesRead = channel.read(buf);
+			if (bytesRead == 0)
+				System.out.println("que onda loocooo");
 		} catch (IOException e) {
-			System.out.println("fallo el read");
+			System.out.println("\nfallo el read");
 			return;
 		}
+		System.out.println("\nse leyeron : "+ bytesRead);
+		conn.setBytesRead(bytesRead);
 		if (bytesRead == -1) { // Did the other end close?
-			if (conn.isClient(channel) && conn.getServer() != null) {
-				conn.getServer().close(); // close the server channel
+			if (conn.isClient(channel)) {
+				System.out.println("\n[SENT CLOSE] en el proxy "+channel.socket().getLocalAddress()+":"+channel.socket().getLocalPort() + "en el chrome " + channel.socket().getInetAddress()+":"+channel.socket().getPort());
+				if (conn.getServer() != null)
+					conn.getServer().close(); // close the server channel
 				channel.close();
 				key.attach(null); // de-reference the proxy connection as it is no longer useful
 			} else {
-				conn.resetServer();
+				System.out.println("\n[SENT CLOSE] en el proxy "+channel.socket().getLocalAddress()+":"+channel.socket().getLocalPort() + "en el servidor remoto " + channel.socket().getInetAddress()+":"+channel.socket().getPort());
+				conn.getServer().close();
+				conn.resetServer(); 
 			}
+			
 		} else if (bytesRead > 0) {
 			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
@@ -65,48 +76,56 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		 */
 		// Retrieve data read earlier
 		
-		/* ----------- PARSEO DE REQ/RESP ----------- */
+		/* ----------- ESTADO DE CONEXION ----------- */
 		ProxyConnection conn = (ProxyConnection) key.attachment();
-		SocketChannel channel = (SocketChannel) key.channel();
-		// TODO ver de poner el parser no como singleton sino como clase que
-		// quede en el proxyconnection.. POR CONCURRENCIA.
 		
+		SocketChannel channel = (SocketChannel) key.channel();
+		
+		/* ----------- PARSEO DE REQ/RESP ----------- */
 		Message message = conn.getMessage(channel);
 
 		/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
 		SocketChannel serverchannel;
-		if ((serverchannel = conn.getServer()) == null) {
-			URL uri = new URL(((HttpRequest) message).getURI());
-//			URI uri = URI.create((());
+		if (message != null && (serverchannel = conn.getServer()) == null) { // message is null when incomplete
+			String url = null;
+			if (((HttpRequest) message).getURI().startsWith("/"))
+				url =  ((HttpRequest) message).getHeaders().get("host") + ((HttpRequest) message).getURI();
+			else
+				url = ((HttpRequest) message).getURI();
+			String[] splitted = url.split("http://");
+			url = "http://" + (splitted.length == 2 ? splitted[1] : splitted[0]);
+			URL uri = new URL(url);
 			
 			serverchannel = SocketChannel.open();
 			serverchannel.configureBlocking(false);
 			serverchannel.register(key.selector(), SelectionKey.OP_READ, conn);
 
 			int port = uri.getPort() == -1 ? 80 : uri.getPort();
+			boolean timeout = false;
 			if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
 					port))) {
 				try {
-					while (!serverchannel.finishConnect()) {
+					long ini = System.currentTimeMillis();
+					while (!serverchannel.finishConnect() && !timeout) {
+						timeout = TIMEOUT < System.currentTimeMillis() - ini;
 						System.out.print(".");
 					}
+					if (timeout)
+						System.out.println("tiempo de espera agotado.");
 				} catch (Exception e) {
 					System.out.println("no se pudo terminar de conectar. probablemente un connection refused");
 					return;
 				}
 			}
-			conn.setServer(serverchannel);
+			if (!timeout)
+				conn.setServer(serverchannel);
 		}
-		
-		if (channel != null && conn.handleWrite(channel)) {
+		if (message == null)
+			key.interestOps(SelectionKey.OP_WRITE); // keep reading
+		else if (channel != null && conn.getServer() != null && conn.handleWrite(channel)) { // message null means it's not a complete message
 			SocketChannel receiver = conn.getOppositeChannel(channel);
 			receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver channel has something to write now
 			key.interestOps(SelectionKey.OP_READ); // Sender has finished writing
 		}
 	}
 }
-
-// System.out.println("URI: " + httpheaders.getURI());
-// System.out.println("Version: " + httpheaders.getVersion());
-// System.out.println("Method: " + httpheaders.getHttpmethod());
-// System.out.println("Extra headers:" + httpheaders.getHeaders());

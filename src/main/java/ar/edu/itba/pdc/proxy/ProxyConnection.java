@@ -6,11 +6,13 @@ import java.nio.channels.SocketChannel;
 
 import ar.edu.itba.pdc.parser.HttpParser;
 import ar.edu.itba.pdc.parser.HttpRequest;
+import ar.edu.itba.pdc.parser.HttpResponse;
+import ar.edu.itba.pdc.parser.InvalidMessageException;
 import ar.edu.itba.pdc.parser.Message;
 
 public class ProxyConnection {
 
-	private int bufSize = 5000; // Size of I/O buffer
+	private int bufSize = 8192; // 8kB Size of I/O buffer
 	private SocketChannel server;
 	private SocketChannel client;
 
@@ -22,8 +24,8 @@ public class ProxyConnection {
 	private ByteBuffer serverbuf;
 	private ByteBuffer clientbuf;
 
-	private String incompleteMessage = "";
-
+	private Message incompleteMessage;
+	private long bytesRead = -1;
 	private HttpParser parser = new HttpParser();
 
 	public ProxyConnection() {
@@ -31,9 +33,28 @@ public class ProxyConnection {
 
 	public Message getMessage(SocketChannel sender) {
 		ByteBuffer buf = getBuffer(sender);
-		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
-		if (parser.hasFinished())
+		Message message = null;
+		try {
+			if (isClient(sender)) {
+				if (incompleteMessage == null)
+					incompleteMessage = new HttpRequest();
+				message = (HttpRequest) parser.parse(buf,
+						(HttpRequest) incompleteMessage, bytesRead);
+			} else {
+				if (incompleteMessage == null)
+					incompleteMessage = new HttpResponse();
+				message = (HttpResponse) parser.parse(buf, incompleteMessage, bytesRead);
+			}
+
+		} catch (InvalidMessageException e) {
+			System.out.println(e);
+		}
+
+		if (message != null && message.isFinished()) {
+			incompleteMessage = null;
 			return message;
+		} else
+			incompleteMessage = message;
 		return null;
 	}
 
@@ -48,15 +69,6 @@ public class ProxyConnection {
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
 		buf.compact(); // Make room for more data to be read in
 
-		// HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
-		// if (!hasRemaining && parser.getState() == ParsingState.Body
-		// && byteswritten + incompleteMessage.length() -
-		// parser.getHeadersLength()
-		// == Integer.valueOf(message.getHeaders().get("content-length"))) {
-		// incompleteMessage = ""; // reset the incomplete message
-		// return true; // finished writting httpmessage is complete
-		// }
-		// return false;
 		return true;
 
 	}
@@ -87,7 +99,7 @@ public class ProxyConnection {
 		serveraddr = server.socket().getInetAddress().getHostName();
 		serverbuf = ByteBuffer.allocate(bufSize);
 	}
-	
+
 	public void resetServer() {
 		server = null;
 		serverport = 0;
@@ -159,5 +171,9 @@ public class ProxyConnection {
 		if (serverport != other.serverport)
 			return false;
 		return true;
+	}
+
+	public void setBytesRead(long bytesRead) {
+		this.bytesRead = bytesRead;
 	}
 }
