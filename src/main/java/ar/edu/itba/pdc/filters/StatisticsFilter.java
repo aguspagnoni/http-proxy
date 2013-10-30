@@ -15,7 +15,7 @@ public class StatisticsFilter implements Filter {
 	private static final int ACCESS_UNIT = 1;
 	private static int interval = DEFAULT_INTERVAL;
 	private static int byteUnit = TRANSFER_UNIT;
-	private static StatisticsFilter instance = null;
+	private static StatisticsFilter instance;
 	@SuppressWarnings("unused")
 	private boolean statisticsEnabled = false;
 	private long initialStatisticsTime = -1;

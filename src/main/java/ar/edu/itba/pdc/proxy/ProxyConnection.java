@@ -3,6 +3,7 @@ package ar.edu.itba.pdc.proxy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.List;
 
 import ar.edu.itba.pdc.filters.Filter;
@@ -30,7 +31,7 @@ public class ProxyConnection {
 	private String incompleteMessage = "";
 
 	private HttpParser parser = new HttpParser();
-	private List<Filter> filterList;
+	private List<Filter> filterList = new ArrayList<Filter>();
 
 	public ProxyConnection() {
 		initialize();

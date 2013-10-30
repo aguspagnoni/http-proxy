@@ -5,15 +5,25 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import ar.edu.itba.pdc.configuration.PortConfiguration;
 
 public class HttpServerSelector {
 	private static final int BUFSIZE = 256; // Buffer size (bytes)
 	private static final int TIMEOUT = 3000; // Wait timeout (milliseconds)
+	private Map<AbstractSelectableChannel, TCPProtocol> handlerMap = new HashMap<AbstractSelectableChannel, TCPProtocol>();
 
-	public static void main(String[] args) throws IOException {
+	public void run() throws IOException {
+
+		/* Create handlers */
+		HttpSelectorProtocol clientHandler = new HttpSelectorProtocol(BUFSIZE);
+		HttpSelectorProtocolAdmin adminHandler = new HttpSelectorProtocolAdmin(
+				BUFSIZE);
+
 		Selector selector = Selector.open();
 		PortConfiguration config = new PortConfiguration();
 
@@ -23,13 +33,14 @@ public class HttpServerSelector {
 				new InetSocketAddress(config.getPortClient()));
 		clientChannel.configureBlocking(false);
 		clientChannel.register(selector, SelectionKey.OP_ACCEPT);
-
+		handlerMap.put(clientChannel, clientHandler);
 		/* Bind Administrator Socket */
 		ServerSocketChannel adminChannel = ServerSocketChannel.open();
 		adminChannel.socket()
 				.bind(new InetSocketAddress(config.getPortAdmin()));
 		adminChannel.configureBlocking(false);
 		adminChannel.register(selector, SelectionKey.OP_ACCEPT);
+		handlerMap.put(clientChannel, adminHandler);
 
 		/* Create Protocol and runnnnn */
 		TCPProtocol protocol = new HttpSelectorProtocol(BUFSIZE);
