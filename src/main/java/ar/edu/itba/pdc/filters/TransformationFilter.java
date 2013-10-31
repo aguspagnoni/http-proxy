@@ -26,23 +26,23 @@ public class TransformationFilter implements Filter {
 	}
 
 	public boolean filter(Message m) {
-		String s = ConfigurationCommands.getInstance().getProperty(
-				"transformation");
-		if (s != null && s.equals("enabled")) {
-
-			String body = m.getBody();
-			if (body != null) {
-				StringBuffer sb = new StringBuffer(body.length());
-				for (int i = 0; i < body.length(); i++) {
-					if (changes.containsKey(body.charAt(i)))
-						sb.append(changes.get(body.charAt(i)));
-					else
-						sb.append(body.charAt(i));
-				}
-				m.setBody(sb.toString());
-			}
-
-		}
+//		String s = ConfigurationCommands.getInstance().getProperty(
+//				"transformation");
+//		if (s != null && s.equals("enabled")) {
+//
+//			String body = m.getBody();
+//			if (body != null) {
+//				StringBuffer sb = new StringBuffer(body.length());
+//				for (int i = 0; i < body.length(); i++) {
+//					if (changes.containsKey(body.charAt(i)))
+//						sb.append(changes.get(body.charAt(i)));
+//					else
+//						sb.append(body.charAt(i));
+//				}
+//				m.setBody(sb.toString());
+//			}
+//
+//		}
 		return true; // ?????????
 	}
 

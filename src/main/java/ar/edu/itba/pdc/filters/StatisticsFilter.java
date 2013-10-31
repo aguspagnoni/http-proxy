@@ -156,29 +156,30 @@ public class StatisticsFilter implements Filter {
 		}
 
 		private void applyFilter(Message m) {
-			int position = StatisticsFilter.this.getCurrentInterval();
-			if (m.getBody() != null) {
-				if (!bytesBetweenIntervals.containsKey(position))
-					bytesBetweenIntervals.put(position, m.getBody().length());
-				else
-					bytesBetweenIntervals.put(position,
-							bytesBetweenIntervals.get(position)
-									+ m.getBody().length());
-			}
+			// int position = StatisticsFilter.this.getCurrentInterval();
+			// if (m.getBody() != null) {
+			// if (!bytesBetweenIntervals.containsKey(position))
+			// bytesBetweenIntervals.put(position, m.getBody().length());
+			// else
+			// bytesBetweenIntervals.put(position,
+			// bytesBetweenIntervals.get(position)
+			// + m.getBody().length());
+			// }
+			 }
+
 		}
 
-	}
+		/* fin clase interna */
 
-	/* fin clase interna */
+		public boolean filter(Message m) {
+			// String clientaddr;
+			// clientaddr = m.getClientaddr();
+			// if (!usersStatistics.containsKey(clientaddr)) {
+			// usersStatistics.put(clientaddr, new
+			// PersonalStatistic(clientaddr));
+			// }
+			// usersStatistics.get(clientaddr).applyFilter(m);
+			return true; // ?????????
 
-	public boolean filter(Message m) {
-		String clientaddr;
-		clientaddr = m.getClientaddr();
-		if (!usersStatistics.containsKey(clientaddr)) {
-			usersStatistics.put(clientaddr, new PersonalStatistic(clientaddr));
 		}
-		usersStatistics.get(clientaddr).applyFilter(m);
-		return true; // ?????????
-
-	}
 }

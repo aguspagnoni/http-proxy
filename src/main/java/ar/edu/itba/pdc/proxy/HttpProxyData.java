@@ -14,7 +14,7 @@ public class HttpProxyData {
 																				// medio
 																				// rancio
 																				// y
-																				// podría
+																				// podra
 																				// cambiarse
 																				// por
 																				// algo
@@ -26,7 +26,7 @@ public class HttpProxyData {
 																				// User,
 																				// pero
 																				// no
-																				// sé
+																				// s
 																				// si
 																				// es
 																				// mucho
@@ -46,7 +46,7 @@ public class HttpProxyData {
 	}
 
 	public boolean registerHistogram(HttpResponse resp) {
-		int code = resp.getStatusCode();
+		int code = resp.getCode();
 		if (code < 0) {
 			return false;
 		}

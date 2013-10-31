@@ -1,96 +1,84 @@
 package ar.edu.itba.pdc.parser;
 
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 
 import ar.edu.itba.pdc.exceptions.BadSyntaxException;
 import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class HttpParser {
-	private HashSet<String> headersHTTP = new HashSet<String>();
-	private HashSet<String> methodsHTTP = new HashSet<String>();
-	private HttpRequest message;
-
-	protected ParsingState state;
-	protected int headersLength;
 
 	public HttpParser() {
-		headersLength = 0;
-		state = ParsingState.Header;
-		// no hace falta definir los headers.. si los metodos. pronto a ser
-		// borrado
-		headersHTTP.add("host");
-		headersHTTP.add("location");
-		headersHTTP.add("keep-alive");
-		headersHTTP.add("cache-control");
-		headersHTTP.add("user-agent");
-		headersHTTP.add("accept");
-		// hasta aca
-		methodsHTTP.add("post");
-		methodsHTTP.add("get");
-		methodsHTTP.add("head");
 	}
 
-	public boolean hasFinished() {
-		if (message.headers.get("content-length") == null)
-			return true; // cable para ver si es un request
-		int contentlength = Integer.valueOf(message.headers
-				.get("content-length"));
-		return headersLength != 0 && contentlength == message.body.length();
-	}
+	public Message parse(ByteBuffer readBuffer, Message message)
+			throws BadSyntaxException, InvalidMessageException {
 
-	public ParsingState getState() {
-		return state;
-	}
+		if (message == null)
+			throw new InvalidMessageException();
+		byte[] auxBuf = ByteBuffer.allocate(8192).array();
+		
+		byte b;
+		int i = 0;
+		switch (message.state) {
+		case Head:
+			readBuffer.flip();
+			while ((b = readBuffer.get()) != '\n')
+				auxBuf[i++] = b;
 
-	public int getHeadersLength() {
-		return headersLength;
-	}
+			message.firstLine = new String(auxBuf);
+			if (message.firstLine == null || message.firstLine.length() == 0)
+				return null; // empty message
+			message.fillHead();
+			message.state = ParsingState.Header;
+			readBuffer.compact();
+			break;
+		case Header:
 
-	public Message parseHeaders(ByteBuffer readBuffer)
-			throws BadSyntaxException {
+			readBuffer.flip();
+			while ((b = readBuffer.get()) != '\n')
+				auxBuf[i++] = b;
 
-		message = new HttpRequest("uninitializedMethod", "uninitializedURI",
-				"uninitializedVersion");
+			message.firstLine = new String(auxBuf);
+			if (message.firstLine == null || message.firstLine.length() == 0)
+				return null; // empty message
+			message.fillHead();
+			message.state = ParsingState.Header;
+			readBuffer.compact();
 
-		String content = new String(readBuffer.array()).substring(0,
-				readBuffer.array().length);
+			// while (i < lines.length && message.state !=
+			// ParsingState.Body) {
+			// String[] kv = lines[i].trim().toLowerCase().split(":");
+			// if (kv.length == 1) {
+			// if (!kv[0].equals(""))
+			// message.addHeader(kv[0], ""); // key without value
+			// else if (lines[i].equals("\r") ){
+			// message.state = ParsingState.Body; // llego el enter
+			// }
+			// } else if (kv.length > 2) {
+			// // TODO ver que pasa en caso de key:value:otracosa
+			// // ,ignoramos otracosa?excepcion? ==> ver rfc2616
+			// } else { // == 2
+			// String[] value = kv[1].trim().split("\r"); // this is for the
+			// 'key : value\r'
+			// message.addHeader(kv[0], value[0]);
+			// }
+			// i++;
+			//
+			// }
+			// if (i >= lines.length)
+			// message.state = ParsingState.Complete; // it was a request
+			;
+			break;
+		case Body:
 
-		String[] lines = content.split(System.getProperty("line.separator"));
-		String[] firstLine = lines[0].split(" ");
-		if (firstLine == null || firstLine.length == 0)
-			return null;
-		headersLength += lines[0].length(); // +2 por el \r\n ?? ver..
-		if (methodsHTTP.contains(firstLine[0].toLowerCase())) {
-			message.setHttpmethod(firstLine[0].toLowerCase());
-			message.setURI(firstLine[1].toLowerCase());
-			message.setVersion(firstLine[2].toLowerCase());
-			int i = 1;
-
-			while (i < lines.length && state == ParsingState.Header) {
-				headersLength += lines[i].length();
-				String[] kv = lines[i].trim().toLowerCase().split(":");
-				if (kv.length == 1) {
-					if (kv[0] != "")
-						message.addHeader(kv[0], "");
-					else
-						state = ParsingState.Body; // llego el enter
-				} else if (kv.length > 2) {
-					// TODO ver que pasa en caso de key:value:otracosa
-					// ,ignoramos otracosa?excepcion? ==> ver rfc2616
-				} else
-					// == 2
-					message.addHeader(kv[0], kv[1]);
-				i++;
+			if (readBuffer.get() == -1 || message.isFinished()) // cierre de conexion es una forma de indicar q el mensaje se termino.
+				message.state = ParsingState.Complete;
+			else {
+				if (proxy.needsTransformation()) // se aplica on the flyy
+					
 			}
-
-			while (i < lines.length && state == ParsingState.Body) {
-				message.body += lines[i];
-			}
+		case Complete:
 			return message;
 		}
-		// no es soportado el metodo ==> TODO devolver excepcion (cn codigo de
-		// unsupported de http)
-		return null;
 	}
 }

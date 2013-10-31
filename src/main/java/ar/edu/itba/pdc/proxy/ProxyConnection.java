@@ -1,6 +1,5 @@
 package ar.edu.itba.pdc.proxy;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -12,11 +11,12 @@ import ar.edu.itba.pdc.filters.TransformationFilter;
 import ar.edu.itba.pdc.parser.HttpParser;
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.HttpResponse;
+import ar.edu.itba.pdc.parser.InvalidMessageException;
 import ar.edu.itba.pdc.parser.Message;
 
 public class ProxyConnection {
 
-	private int bufSize = 500000; // Size of I/O buffer
+	private int bufSize = 8192; // Size of I/O buffer
 	private SocketChannel server;
 	private SocketChannel client;
 
@@ -28,7 +28,7 @@ public class ProxyConnection {
 	private ByteBuffer serverbuf;
 	private ByteBuffer clientbuf;
 
-	private String incompleteMessage = "";
+	private Message incompleteMessage;
 
 	private HttpParser parser = new HttpParser();
 	private List<Filter> filterList = new ArrayList<Filter>();
@@ -44,9 +44,28 @@ public class ProxyConnection {
 
 	public Message getMessage(SocketChannel sender) {
 		ByteBuffer buf = getBuffer(sender);
-		HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
-		if (parser.hasFinished())
+		Message message = null;
+		try {
+			if (isClient(sender)) {
+				if (incompleteMessage == null)
+					incompleteMessage = new HttpRequest();
+				message = (HttpRequest) parser.parse(buf,
+						(HttpRequest) incompleteMessage);
+			} else {
+				if (incompleteMessage == null)
+					incompleteMessage = new HttpResponse();
+				message = (HttpResponse) parser.parse(buf, incompleteMessage);
+			}
+
+		} catch (InvalidMessageException e) {
+			System.out.println(e);
+		}
+
+		if (message != null && message.isFinished()) {
+			incompleteMessage = null;
 			return message;
+		} else
+			incompleteMessage = message;
 		return null;
 	}
 
@@ -69,11 +88,13 @@ public class ProxyConnection {
 	 * httpmessage is complete // } // // } // return false; return true; }
 	 */
 	public SocketChannel getOppositeChannel(SocketChannel channel) {
-		boolean isserver = channel.socket().getPort() == server.socket()
-				.getPort()
+		return isClient(channel) ? server : client;
+	}
+
+	public boolean isClient(SocketChannel channel) {
+		return channel.socket().getPort() == client.socket().getPort()
 				&& channel.socket().getInetAddress().getHostName()
-						.equals(server.socket().getInetAddress().getHostName());
-		return isserver ? client : server;
+						.equals(client.socket().getInetAddress().getHostName());
 	}
 
 	public ByteBuffer getBuffer(SocketChannel channel) {
@@ -91,6 +112,13 @@ public class ProxyConnection {
 		serverport = server.socket().getPort();
 		serveraddr = server.socket().getInetAddress().getHostName();
 		serverbuf = ByteBuffer.allocate(bufSize);
+	}
+
+	public void resetServer() {
+		server = null;
+		serverport = 0;
+		serveraddr = null;
+		serverbuf = null;
 	}
 
 	public SocketChannel getClient() {
