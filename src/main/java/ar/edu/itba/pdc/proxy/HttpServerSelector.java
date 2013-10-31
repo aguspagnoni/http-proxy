@@ -42,15 +42,18 @@ public class HttpServerSelector {
                 // Server socket channel has pending connection requests?
                 if (key.isAcceptable()) {
                     protocol.handleAccept(key);
+                    System.out.println("\nA");
                 }
                 // Client socket channel has pending data?
                 if (key.isReadable()) {
                     protocol.handleRead(key);
+                    System.out.println("\nR");
                 }
                 // Client socket channel is available for writing and
                 // key is valid (i.e., channel not closed)?
                 if (key.isValid() && key.isWritable()) {
                     protocol.handleWrite(key);
+                    System.out.println("\nW");
                 }
                 keyIter.remove(); // remove from set of selected keys
             }

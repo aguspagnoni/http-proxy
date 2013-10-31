@@ -38,10 +38,11 @@ public class HttpRequest extends Message {
 	}
 	
 	public void fillHead() {
-		if (firstLine != null) {
-			this.httpmethod = firstLine[0];
-			this.URI = firstLine[1];
-			this.version = firstLine[2];
+		String[] aux = firstLine.toLowerCase().split(" "); 
+		if (firstLine != null && aux.length == 3) {
+			this.httpmethod = aux[0];
+			this.URI = aux[1];
+			this.version = aux[2];
 		}
 	}
 

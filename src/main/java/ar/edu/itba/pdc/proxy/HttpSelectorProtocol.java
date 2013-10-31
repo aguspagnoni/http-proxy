@@ -24,6 +24,7 @@ public class HttpSelectorProtocol implements TCPProtocol {
 	public void handleAccept(SelectionKey key) throws IOException {
 		SocketChannel clntChan = ((ServerSocketChannel) key.channel()).accept();
 		clntChan.configureBlocking(false); // Must be nonblocking to register
+		System.out.println("\n[ACCEPT] cliente " + clntChan.socket().getInetAddress()+":"+clntChan.socket().getPort());
 		// Register the selector with new channel for read and attach byte
 		// buffer
 
@@ -42,23 +43,22 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		long bytesRead = 0;
 		try {
 			bytesRead = channel.read(buf);
-			if (bytesRead == 0)
-				System.out.println("que onda loocooo");
 		} catch (IOException e) {
 			System.out.println("\nfallo el read");
 			return;
 		}
-		System.out.println("\nse leyeron : "+ bytesRead);
+		System.out.println("\n[READ] cliente " + channel.socket().getInetAddress()+":"+channel.socket().getPort());
+		System.out.println("se leyeron : "+ bytesRead);
 		conn.setBytesRead(bytesRead);
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {
-				System.out.println("\n[SENT CLOSE] en el proxy "+channel.socket().getLocalAddress()+":"+channel.socket().getLocalPort() + "en el chrome " + channel.socket().getInetAddress()+":"+channel.socket().getPort());
+				System.out.println("\n[SENT CLOSE] cliente " + channel.socket().getInetAddress()+":"+channel.socket().getPort());
 				if (conn.getServer() != null)
 					conn.getServer().close(); // close the server channel
 				channel.close();
 				key.attach(null); // de-reference the proxy connection as it is no longer useful
 			} else {
-				System.out.println("\n[SENT CLOSE] en el proxy "+channel.socket().getLocalAddress()+":"+channel.socket().getLocalPort() + "en el servidor remoto " + channel.socket().getInetAddress()+":"+channel.socket().getPort());
+				System.out.println("\n[SENT CLOSE] servidor remoto " + channel.socket().getInetAddress()+":"+channel.socket().getPort());
 				conn.getServer().close();
 				conn.resetServer(); 
 			}
@@ -87,23 +87,25 @@ public class HttpSelectorProtocol implements TCPProtocol {
 		/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
 		SocketChannel serverchannel;
 		if (message != null && (serverchannel = conn.getServer()) == null) { // message is null when incomplete
-			String url = null;
-			if (((HttpRequest) message).getURI().startsWith("/"))
-				url =  ((HttpRequest) message).getHeaders().get("host") + ((HttpRequest) message).getURI();
-			else
-				url = ((HttpRequest) message).getURI();
-			String[] splitted = url.split("http://");
-			url = "http://" + (splitted.length == 2 ? splitted[1] : splitted[0]);
-			URL uri = new URL(url);
+//			String url = null;
+//			if (((HttpRequest) message).getURI().startsWith("/"))
+//				url =  ((HttpRequest) message).getHeaders().get("host") + ((HttpRequest) message).getURI();
+//			else
+//				url = ((HttpRequest) message).getURI();
+//			String[] splitted = url.split("http://");
+//			url = "http://" + (splitted.length == 2 ? splitted[1] : splitted[0]);
+//			URL uri = new URL(url);
 			
 			serverchannel = SocketChannel.open();
 			serverchannel.configureBlocking(false);
 			serverchannel.register(key.selector(), SelectionKey.OP_READ, conn);
 
-			int port = uri.getPort() == -1 ? 80 : uri.getPort();
+//			int port = uri.getPort() == -1 ? 80 : uri.getPort();
 			boolean timeout = false;
-			if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
-					port))) {
+//			if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
+//					port))) {
+			if (!serverchannel.connect(new InetSocketAddress("localhost",
+					8888))) {
 				try {
 					long ini = System.currentTimeMillis();
 					while (!serverchannel.finishConnect() && !timeout) {

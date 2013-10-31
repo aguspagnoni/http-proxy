@@ -9,7 +9,7 @@ public abstract class Message {
 	
 	protected Map<String, String> headers = new HashMap<String, String>();
 	protected String body = "";
-	protected String[] firstLine;
+	protected String firstLine = "";
 	protected ParsingState state = ParsingState.Head;
 	
 	protected void addHeader(String key, String value) {
