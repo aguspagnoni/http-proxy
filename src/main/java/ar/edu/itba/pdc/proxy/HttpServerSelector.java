@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,7 +21,8 @@ public class HttpServerSelector {
 	public void run() throws IOException {
 
 		/* Create handlers */
-		HttpSelectorProtocol clientHandler = new HttpSelectorProtocol(BUFSIZE);
+		HttpSelectorProtocolClient clientHandler = new HttpSelectorProtocolClient(
+				BUFSIZE);
 		HttpSelectorProtocolAdmin adminHandler = new HttpSelectorProtocolAdmin(
 				BUFSIZE);
 
@@ -40,10 +42,10 @@ public class HttpServerSelector {
 				.bind(new InetSocketAddress(config.getPortAdmin()));
 		adminChannel.configureBlocking(false);
 		adminChannel.register(selector, SelectionKey.OP_ACCEPT);
-		handlerMap.put(clientChannel, adminHandler);
+		handlerMap.put(adminChannel, adminHandler);
 
 		/* Create Protocol and runnnnn */
-		TCPProtocol protocol = new HttpSelectorProtocol(BUFSIZE);
+		// TCPProtocol protocol = new HttpSelectorProtocol(BUFSIZE);
 		while (!Thread.interrupted()) {
 			if (selector.select(TIMEOUT) == 0) {
 				System.out.print(".");
@@ -53,13 +55,25 @@ public class HttpServerSelector {
 			while (keyIter.hasNext()) {
 				SelectionKey key = keyIter.next();
 				if (key.isAcceptable()) {
-					protocol.handleAccept(key);
+					SocketChannel newChannel = ((ServerSocketChannel) key
+							.channel()).accept();
+					newChannel.configureBlocking(false);
+					newChannel.register(selector, SelectionKey.OP_READ);
+					TCPProtocol handler = handlerMap.get(key.channel());
+					handlerMap.put(newChannel, handler);
+					handler.handleAccept(newChannel);
+
+					// protocol.handleAccept(key);
 				}
 				if (key.isReadable()) {
-					protocol.handleRead(key);
+					System.out.println(key.attachment());
+					SocketChannel channel = handlerMap.get(key.channel())
+							.handleRead(key);
+					if (channel != null)
+						handlerMap.put(channel, handlerMap.get(key.channel()));
 				}
 				if (key.isValid() && key.isWritable()) {
-					protocol.handleWrite(key);
+					handlerMap.get(key.channel()).handleWrite(key);
 				}
 				keyIter.remove();
 			}
