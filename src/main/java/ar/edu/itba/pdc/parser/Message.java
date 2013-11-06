@@ -12,8 +12,9 @@ public abstract class Message {
         protected String firstLine = "";
         protected ParsingState state = ParsingState.Head;
         
-        protected void addHeader(String key, String value) {
-                headers.put(key, value);
+        protected void addHeader(String line) {
+        		String[] kv = line.split(":");
+                headers.put(kv[0], kv[1]);
         }
         
         public abstract boolean isFinished();

@@ -3,6 +3,7 @@ package ar.edu.itba.pdc.proxy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +22,9 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 
 	}
 
-	public void handleAccept(SocketChannel channel) throws IOException {
+	public void handleAccept(SocketChannel admClntChan) throws IOException {
 		// logger.info("New admin connected");
-		list.put(channel, new ChannelBuffers());
+		list.put(admClntChan, new ChannelBuffers());
 	}
 
 	public SocketChannel handleRead(SelectionKey key) throws IOException {

@@ -62,15 +62,20 @@ public class HttpServerSelector {
 					TCPProtocol handler = handlerMap.get(key.channel());
 					handlerMap.put(newChannel, handler);
 					handler.handleAccept(newChannel);
+					System.out.println("\n[ACCEPT] cliente "
+							+ newChannel.socket().getInetAddress() + ":"
+							+ newChannel.socket().getPort());
 
 					// protocol.handleAccept(key);
 				}
 				if (key.isReadable()) {
-					System.out.println(key.attachment());
-					SocketChannel channel = handlerMap.get(key.channel())
-							.handleRead(key);
-					if (channel != null)
+					SocketChannel channel = handlerMap.get(key.channel()).handleRead(key);
+					if (channel != null) {
+						System.out.println("\n[READ] cliente "
+								+ channel.socket().getInetAddress() + ":"
+								+ channel.socket().getPort());
 						handlerMap.put(channel, handlerMap.get(key.channel()));
+					}
 				}
 				if (key.isValid() && key.isWritable()) {
 					handlerMap.get(key.channel()).handleWrite(key);

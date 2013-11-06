@@ -5,7 +5,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public interface TCPProtocol {
-      void handleAccept(SocketChannel newChannel) throws IOException;
+      void handleAccept(SocketChannel channel) throws IOException;
       SocketChannel handleRead(SelectionKey key) throws IOException;
       void handleWrite(SelectionKey key) throws IOException;
 }

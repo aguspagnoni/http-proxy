@@ -22,7 +22,7 @@ public class HttpParser {
 		switch (message.state) {
 		case Head:
 			readBuffer.flip();
-			while ((b = readBuffer.get()) != '\n')
+			while ((b = readBuffer.get()) != '\n' && readBuffer.hasRemaining())
 				auxBuf[i++] = b;
 
 			message.firstLine = new String(auxBuf);
@@ -35,50 +35,30 @@ public class HttpParser {
 		case Header:
 
 			readBuffer.flip();
-			while ((b = readBuffer.get()) != '\n')
-				auxBuf[i++] = b;
-
-			message.firstLine = new String(auxBuf);
-			if (message.firstLine == null || message.firstLine.length() == 0)
-				return null; // empty message
-			message.fillHead();
-			message.state = ParsingState.Header;
+			do {
+				i = 0;
+				while ((b = readBuffer.get()) != '\n' && readBuffer.hasRemaining())
+					auxBuf[i++] = b;
+				
+				message.addHeader(new String(auxBuf, 0, i-1));
+				
+			} while (i > 1); // if is 1 it reached \r\n line
+			
+			message.state = ParsingState.Body;
 			readBuffer.compact();
-
-			// while (i < lines.length && message.state !=
-			// ParsingState.Body) {
-			// String[] kv = lines[i].trim().toLowerCase().split(":");
-			// if (kv.length == 1) {
-			// if (!kv[0].equals(""))
-			// message.addHeader(kv[0], ""); // key without value
-			// else if (lines[i].equals("\r") ){
-			// message.state = ParsingState.Body; // llego el enter
-			// }
-			// } else if (kv.length > 2) {
-			// // TODO ver que pasa en caso de key:value:otracosa
-			// // ,ignoramos otracosa?excepcion? ==> ver rfc2616
-			// } else { // == 2
-			// String[] value = kv[1].trim().split("\r"); // this is for the
-			// 'key : value\r'
-			// message.addHeader(kv[0], value[0]);
-			// }
-			// i++;
-			//
-			// }
-			// if (i >= lines.length)
-			// message.state = ParsingState.Complete; // it was a request
-			;
 			break;
 		case Body:
-
-			if (readBuffer.get() == -1 || message.isFinished()) // cierre de conexion es una forma de indicar q el mensaje se termino.
-				message.state = ParsingState.Complete;
-			else {
-				if (proxy.needsTransformation()) // se aplica on the flyy
-					
-			}
+				// filter.transform()
+//			boolean transformationOn = filter.applyTransformation && message.headers.get("content-type").contains("text/plain");
+//			if (transformationOn) {
+//				ByteBuffer transformedBuffer = ByteBuffer.allocate(readBuffer.capacity());
+//				while ((b = readBuffer.get()) != -1 && !message.isFinished()) // cierre de conexion (-1) es una forma de indicar q el mensaje se termino.
+//					readBuffer.put(readBuffer.arrayOffset() + i, b);
+//			}
+			return message; // hasta q no este lo de la transformacion se mmanda asi como viene
 		case Complete:
 			return message;
 		}
+		return message;
 	}
 }
