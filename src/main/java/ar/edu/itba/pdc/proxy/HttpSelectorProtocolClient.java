@@ -34,14 +34,14 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		long bytesRead = 0;
 		try {
 			bytesRead = channel.read(buf);
+			System.out.println(new String(buf.array(),0,100));
 		} catch (IOException e) {
 			System.out.println("\nfallo el read");
 			return null;
 		}
-		System.out.println("\n[READ] cliente "
+		System.out.println("\n[READ] " + bytesRead + " from "
 				+ channel.socket().getInetAddress() + ":"
 				+ channel.socket().getPort());
-		System.out.println("se leyeron : " + bytesRead);
 		// conn.setBytesRead(bytesRead);
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {
@@ -96,11 +96,11 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 						System.out.print("*");
 					}
 				}
-				serverchannel.register(key.selector(), SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+//				serverchannel.register(key.selector(), SelectionKey.OP_WRITE);
 				conn.setServer(serverchannel);
 				proxyconnections.put(serverchannel, conn);
-				key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 			}
+			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			return serverchannel;
 		}
 	
@@ -118,8 +118,6 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 
 		/* ----------- PARSEO DE REQ/RESP ----------- */
 		ProxyConnection conn = proxyconnections.get(channel);
-		// TODO ver de poner el parser no como singleton sino como clase que
-		// quede en el proxyconnection.. POR CONCURRENCIA.
 
 		SocketChannel receiver = conn.getOppositeChannel(channel);
 		ByteBuffer buf = conn.getBuffer(channel);
@@ -127,12 +125,12 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		int byteswritten = 0;
 		boolean hasRemaining = true;
 		// buf.flip(); // Prepare buffer for writing
-
+		System.out.println(new String(buf.array(),0,100));
 		byteswritten = receiver.write(buf);
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
-		System.out.println("\n[WRITE] "+ channel.socket().getLocalAddress()+":" + channel.socket().getLocalPort()+ " bytes: " + byteswritten + " servidor remoto "
-				+ channel.socket().getInetAddress() + ":"
-				+ channel.socket().getPort());
+		System.out.println("\n[WRITE] "+ byteswritten + " to "
+				+ receiver.socket().getInetAddress() + ":"
+				+ receiver.socket().getPort());
 
 		buf.compact(); // Make room for more data to be read in
 		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver
