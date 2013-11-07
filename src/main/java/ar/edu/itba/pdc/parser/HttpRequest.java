@@ -47,11 +47,9 @@ public class HttpRequest extends Message {
         public boolean isFinished() {
                 if (headers.get("host") == null)
                         return false;
-                if (headers.get("content-length") == null) 
-                        return true; // cable para ver si es un request.. pq podria tener body pero no haber llegado el content-length todavia :/
-                int contentlength = Integer.valueOf(headers.get("content-length")
-                                .trim());
-                return headersLength != 0 && contentlength == body.length();
+                if (headers.get("content-length") != null) 
+                	setContentLength(Integer.valueOf(headers.get("content-length").trim()));
+                return getContentLength() == getAmountRead() - getHeadersLength();
         }
 
         public String getHttpmethod() {

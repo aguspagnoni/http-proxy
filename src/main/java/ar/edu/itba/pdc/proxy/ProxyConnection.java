@@ -62,11 +62,11 @@ public class ProxyConnection {
 		}
 
 		if (message != null && message.isFinished()) {
-			incompleteMessage = null;
+			resetIncompleteMessage();
 			return message;
 		} else
 			incompleteMessage = message;
-		return null;
+		return message;
 	}
 
 	/*
@@ -148,6 +148,10 @@ public class ProxyConnection {
 		this.clientbuf = clientbuf;
 	}
 
+	public void resetIncompleteMessage() {
+		this.incompleteMessage = null;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -186,4 +190,5 @@ public class ProxyConnection {
 			return false;
 		return true;
 	}
+
 }

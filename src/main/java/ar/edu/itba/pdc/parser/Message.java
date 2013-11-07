@@ -8,13 +8,17 @@ import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 public abstract class Message {
         
         protected Map<String, String> headers = new HashMap<String, String>();
-        protected String body = "";
-        protected String firstLine = "";
+        protected int contentLength;
+        protected int headersLength;
+        protected int amountRead;
+
+		protected String firstLine = "";
         protected ParsingState state = ParsingState.Head;
         
         protected void addHeader(String line) {
         		String[] kv = line.split(":");
-                headers.put(kv[0], kv[1]);
+        		if (kv.length > 1)
+        			headers.put(kv[0].trim().toLowerCase(), kv[1].trim().toLowerCase());
         }
         
         public abstract boolean isFinished();
@@ -27,5 +31,31 @@ public abstract class Message {
          * This method should recognize the method, resource path and the protocol version.
          * */
         public abstract void fillHead();
+
+		public int getContentLength() {
+			return contentLength;
+		}
+		
+		public int getHeadersLength() {
+			return headersLength;
+		}
+		
+		public void setHeadersLength(int headersLength) {
+			this.headersLength = headersLength;
+		}
+
+		public void setContentLength(int length) {
+			this.contentLength = length;
+		}
+
+		public int getAmountRead() {
+			return amountRead;
+		}
+
+		public void increaseAmountRead(int amountRead) {
+			this.amountRead += amountRead;
+		}
+        
+        
 
 }

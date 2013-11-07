@@ -10,18 +10,10 @@ public class HttpResponse extends Message {
 	// hereda el body
 
 	public boolean isFinished() {
-		// int headersLength = 0;
-		// for (String s : firstLine)
-		// headersLength += s.length();
-		// for (String s : headers.values())
-		// headersLength += s.length();
-		// for (String s : headers.keySet())
-		// headersLength += s.length();
-		String contentlength = headers.get("content-length");
-		// if (code >= 200 && code < 300) // ok response
-		// return contentlength != null && Integer.valueOf(contentlength) ==
-		// body.length();
-		return true; // cable para los casos como un redirect que no tiene body
+		if (headers.get("content-length") == null)
+			return false;
+        setContentLength(Integer.valueOf(headers.get("content-length").trim()));
+        return getContentLength() == getAmountRead() - getHeadersLength();
 	}
 
 	public void fillHead() {

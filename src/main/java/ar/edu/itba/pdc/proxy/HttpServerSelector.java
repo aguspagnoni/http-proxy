@@ -69,12 +69,12 @@ public class HttpServerSelector {
 					// protocol.handleAccept(key);
 				}
 				if (key.isReadable()) {
-					SocketChannel channel = handlerMap.get(key.channel()).handleRead(key);
-					if (channel != null) {
-						System.out.println("\n[READ] cliente "
-								+ channel.socket().getInetAddress() + ":"
-								+ channel.socket().getPort());
-						handlerMap.put(channel, handlerMap.get(key.channel()));
+					TCPProtocol handler = handlerMap.get(key.channel());
+					if (handler != null) {// for rare connections
+						SocketChannel channel = handler.handleRead(key);
+						if (channel != null) {
+							handlerMap.put(channel, handlerMap.get(key.channel()));
+						}
 					}
 				}
 				if (key.isValid() && key.isWritable()) {
