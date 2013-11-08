@@ -34,7 +34,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		long bytesRead = 0;
 		try {
 			bytesRead = channel.read(buf);
-			System.out.println(new String(buf.array(),0,100));
+			System.out.println(new String(buf.array(), 0, 100));
 		} catch (IOException e) {
 			System.out.println("\nfallo el read");
 			return null;
@@ -59,8 +59,8 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
 				conn.getServer().close();
-//				proxyconnections.remove(channel);
-//				key.cancel();
+				// proxyconnections.remove(channel);
+				// key.cancel();
 				conn.resetIncompleteMessage();
 				conn.resetServer();
 			}
@@ -68,6 +68,8 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		} else if (bytesRead > 0) {
 			// Indicate via key that reading/writing are both of interest now.
 			Message message = conn.getMessage(channel);
+			message.increaseAmountRead((int) bytesRead); // DECIDIR SI INT O
+			message.setFrom("client" + channel.socket().getInetAddress()); // LONG
 
 			/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
 			SocketChannel serverchannel;
@@ -96,14 +98,15 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 						System.out.print("*");
 					}
 				}
-//				serverchannel.register(key.selector(), SelectionKey.OP_WRITE);
+				// serverchannel.register(key.selector(),
+				// SelectionKey.OP_WRITE);
 				conn.setServer(serverchannel);
 				proxyconnections.put(serverchannel, conn);
 			}
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			return serverchannel;
 		}
-	
+
 		return null;
 	}
 
@@ -125,10 +128,14 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		int byteswritten = 0;
 		boolean hasRemaining = true;
 		// buf.flip(); // Prepare buffer for writing
-		System.out.println(new String(buf.array(),0,100));
+		System.out.println(new String(buf.array(), 0, 100));
+
 		byteswritten = receiver.write(buf);
+		Message m = conn.getMessage(channel);
+		m.increaseAmountRead(byteswritten);
+		conn.handleFilters(m);
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
-		System.out.println("\n[WRITE] "+ byteswritten + " to "
+		System.out.println("\n[WRITE] " + byteswritten + " to "
 				+ receiver.socket().getInetAddress() + ":"
 				+ receiver.socket().getPort());
 

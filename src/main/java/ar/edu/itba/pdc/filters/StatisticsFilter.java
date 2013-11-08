@@ -15,7 +15,7 @@ public class StatisticsFilter implements Filter {
 	private static final int ACCESS_UNIT = 1;
 	private static int interval = DEFAULT_INTERVAL;
 	private static int byteUnit = TRANSFER_UNIT;
-	private static StatisticsFilter instance;
+	private static StatisticsFilter instance = null;
 	@SuppressWarnings("unused")
 	private boolean statisticsEnabled = false;
 	private long initialStatisticsTime = -1;
@@ -32,7 +32,8 @@ public class StatisticsFilter implements Filter {
 		if (usersStatistics == null) {
 			usersStatistics = new HashMap<String, PersonalStatistic>();
 			initialStatisticsTime = System.currentTimeMillis();
-			// setInterval(AdminParser.getInterval()) // desde el archivo conf
+			// setInterval(StupidAdminParser.getInterval()); // desde el archivo
+			// conf
 		}
 	}
 
@@ -156,30 +157,30 @@ public class StatisticsFilter implements Filter {
 		}
 
 		private void applyFilter(Message m) {
-			// int position = StatisticsFilter.this.getCurrentInterval();
-			// if (m.getBody() != null) {
-			// if (!bytesBetweenIntervals.containsKey(position))
-			// bytesBetweenIntervals.put(position, m.getBody().length());
-			// else
-			// bytesBetweenIntervals.put(position,
-			// bytesBetweenIntervals.get(position)
-			// + m.getBody().length());
-			// }
-			 }
+			int position = StatisticsFilter.this.getCurrentInterval();
+
+			if (!bytesBetweenIntervals.containsKey(position))
+				bytesBetweenIntervals.put(position, m.getAmountRead());
+			else
+				bytesBetweenIntervals
+						.put(position,
+								bytesBetweenIntervals.get(position)
+										+ m.getAmountRead());
 
 		}
 
-		/* fin clase interna */
+	}
 
-		public boolean filter(Message m) {
-			// String clientaddr;
-			// clientaddr = m.getClientaddr();
-			// if (!usersStatistics.containsKey(clientaddr)) {
-			// usersStatistics.put(clientaddr, new
-			// PersonalStatistic(clientaddr));
-			// }
-			// usersStatistics.get(clientaddr).applyFilter(m);
-			return true; // ?????????
+	/* fin clase interna */
 
+	public boolean filter(Message m) {
+		String clientaddr;
+		clientaddr = m.getFrom(); // TODO DEFINIR
+		if (!usersStatistics.containsKey(clientaddr)) {
+			usersStatistics.put(clientaddr, new PersonalStatistic(clientaddr));
 		}
+		usersStatistics.get(clientaddr).applyFilter(m);
+		return true; // TODO ?????????
+
+	}
 }

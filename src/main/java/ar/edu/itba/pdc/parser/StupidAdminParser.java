@@ -28,6 +28,7 @@ public class StupidAdminParser {
 		commandTypes.put("interval", ValueCommandExecutor.getInstance());
 		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
 	}
+
 	public String parseCommand(ByteBuffer readBuffer, int bytesRead)
 			throws BadSyntaxException {
 
@@ -44,12 +45,15 @@ public class StupidAdminParser {
 				} else {
 					commands.put(trimmed, "");
 				}
-			} else if (trimmed.isEmpty())
+			} else if (trimmed.isEmpty()) {
+				readBuffer.rewind();
 				return null;
-			else
+			} else {
+				readBuffer.rewind();
 				throw new BadSyntaxException();
+			}
 		}
-
+		readBuffer.rewind();
 		return takeActions(commands);
 	}
 

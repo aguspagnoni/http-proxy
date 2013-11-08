@@ -1,5 +1,6 @@
 package ar.edu.itba.pdc.proxy;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -69,24 +70,37 @@ public class ProxyConnection {
 		return message;
 	}
 
-	/*
-	 * public boolean handleWrite(SocketChannel sender) throws IOException {
-	 * SocketChannel receiver = getOppositeChannel(sender); ByteBuffer buf =
-	 * getBuffer(sender); int byteswritten = 0; boolean hasRemaining = true;
-	 * buf.flip(); // Prepare buffer for writing String content = new
-	 * String(buf.array()).substring(0, buf.array().length);
-	 * System.out.println(content); HttpResponse r = new HttpResponse();
-	 * r.setBody(new String(buf.array()).substring(0, buf.array().length));
-	 * r.setClientaddr(clientaddr); for (Filter f : filterList) { f.filter(r); }
-	 * byteswritten = receiver.write(buf); hasRemaining = buf.hasRemaining(); //
-	 * Buffer completely written? buf.compact(); // Make room for more data to
-	 * be read in // HttpRequest message = (HttpRequest)
-	 * parser.parseHeaders(buf); // if (!hasRemaining && parser.getState() ==
-	 * ParsingState.Body // && byteswritten + incompleteMessage.length() - //
-	 * parser.getHeadersLength() // == length) { // incompleteMessage = ""; //
-	 * reset the incomplete message // return true; // finished writting
-	 * httpmessage is complete // } // // } // return false; return true; }
-	 */
+	public void handleFilters(Message m) throws IOException {
+
+		// SocketChannel receiver = getOppositeChannel(sender);
+		// ByteBuffer buf = getBuffer(sender);
+		// int byteswritten = 0;
+		// boolean hasRemaining = true;
+		// buf.flip();
+		// String content = new String(buf.array()).substring(0,
+		// buf.array().length);
+		// System.out.println(content);
+		// HttpResponse r = new HttpResponse();
+		// // r.setBody(new String(buf.array()).substring(0,
+		// buf.array().length));
+		// // r.setClientaddr(clientaddr);
+		for (Filter f : filterList) {
+			f.filter(m);
+		}
+		// byteswritten = receiver.write(buf);
+		// hasRemaining = buf.hasRemaining();
+		// buf.compact();
+		// HttpRequest message = (HttpRequest) parser.parseHeaders(buf);
+		// if (!hasRemaining
+		// && parser.getState() == ParsingState.Body
+		// && byteswritten + incompleteMessage.length()
+		// - parser.getHeadersLength() == length) {
+		// incompleteMessage = "";
+		// return true;
+		// }
+
+	}
+
 	public SocketChannel getOppositeChannel(SocketChannel channel) {
 		return isClient(channel) ? server : client;
 	}

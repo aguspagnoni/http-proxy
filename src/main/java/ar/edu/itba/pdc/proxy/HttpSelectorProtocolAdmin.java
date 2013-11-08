@@ -32,15 +32,18 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 		SocketChannel s = (SocketChannel) key.channel();
 		ChannelBuffers channelBuffers = list.get(s);
 		int bytesRead = s.read(channelBuffers.getBuffer(BufferType.read));
-
 		try {
 			String response;
 			if ((response = parser.parseCommand(
 					channelBuffers.getBuffer(BufferType.read), bytesRead)) != null) {
 				if (logged || response.equals("PASSWORD OK\n")) {
+					if (logged && response.equals("PASSWORD OK\n"))
+						response = "ALREADY LOGGED\n";
 					logged = true;
 					s.write(ByteBuffer.wrap(response.getBytes()));
 				} else if (response.equals("INVALID PASSWORD\n")) {
+					if (logged)
+						response = "ALREADY LOGGED\n";
 					s.write(ByteBuffer.wrap(response.getBytes()));
 				} else {
 					s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
