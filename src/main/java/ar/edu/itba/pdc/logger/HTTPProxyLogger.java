@@ -11,7 +11,8 @@ public class HTTPProxyLogger {
 	private HTTPProxyLogger()
 	{
 		//logger = Logger.getLogger(HTTPProxyLogger.class);
-		logger=Logger.getLogger("HTTP Proxy Logger");
+		logger=Logger.getLogger("FILE");
+
 //		logger.addApender(new FileAppender(new SimpleLayout(), "logs"));
 		
 	}
@@ -23,6 +24,14 @@ public class HTTPProxyLogger {
 	 return instance;
 	}
 	
+	public void info(String message){
+		logger.info(message);
+	}
+	
+	
+	public static void main(String[] args) throws IOException {
+		HTTPProxyLogger.getInstance();
+	}
 	
 
 }
