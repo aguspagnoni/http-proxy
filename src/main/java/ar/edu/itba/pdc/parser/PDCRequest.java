@@ -104,5 +104,31 @@ public class PDCRequest extends Message{
 		return "OK";
 	}
 	
+	/**
+	 * Once the commands were parsed, takes the appropriate action using the
+	 * executors stored in the commandTypes map.
+	 * 
+	 * @param commands
+	 * @return
+	 * @throws BadSyntaxException
+	 */
+
+	private String takeActions(Map<String, String> commands)
+			throws BadSyntaxException {
+
+		String responseToAdmin = null;
+		for (String cmd : commands.keySet()) {
+			responseToAdmin = commandTypes.get(cmd).execute(cmd,
+					commands.get(cmd));
+
+			if (responseToAdmin != null) {
+				commandManager.saveFile();
+			} else {
+				throw new BadSyntaxException();
+			}
+		}
+		return responseToAdmin + '\n';
+	}
+
 
 }

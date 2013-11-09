@@ -36,7 +36,7 @@ public class AdminParser {
 		commandTypes.put("delfilter", null);
 	}
 	
-	public Message parse(ByteBuffer readBuffer, Message message)
+	public Message parse(ByteBuffer readBuffer, PDCRequest message)
 			throws BadSyntaxException, InvalidMessageException {
 
 		if (message == null)
@@ -85,47 +85,14 @@ public class AdminParser {
 				readBuffer.rewind();
 				return message; 
 			case Complete:
-				
+				message.parseMessage(readBuffer, i);
 				readBuffer.rewind();
 				return message;
 			}
 		}
 	}
 	
-	public String parseRequest(ByteBuffer readBuffer, int bytesRead, Message message){
-		
-		return null;
-	}
 	
-	
-	public String parseCommand(ByteBuffer readBuffer, int bytesRead, Message message)
-			throws BadSyntaxException {
-
-		String fullCommand = new String(readBuffer.array()).substring(0,
-				bytesRead);
-		Map<String, String> commands = new HashMap<String, String>();
-		for (String s : fullCommand.split(";")) {
-
-			String[] aux = s.split("=");
-			String trimmed = aux[0].trim();
-			if (commandTypes.containsKey(trimmed)) {
-				if (aux.length > 1) {
-					commands.put(trimmed, aux[1].trim());
-				} else {
-					commands.put(trimmed, "");
-				}
-			} else if (trimmed.isEmpty()) {
-				readBuffer.rewind();
-				return null;
-			} else {
-				readBuffer.rewind();
-				throw new BadSyntaxException();
-			}
-		}
-		readBuffer.rewind();
-		return takeActions(commands);
-	}
-
 	/**
 	 * Once the commands were parsed, takes the appropriate action using the
 	 * executors stored in the commandTypes map.
