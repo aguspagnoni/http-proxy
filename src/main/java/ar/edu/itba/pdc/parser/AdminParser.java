@@ -21,13 +21,19 @@ public class AdminParser {
 	public AdminParser(){
 		commandManager = ConfigurationCommands.getInstance();
 		commandTypes.put("statistics", BooleanCommandExecutor.getInstance());
-		commandTypes.put("getStatistics", GetCommandExecutor.getInstance());
+		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
+		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
+		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
 		commandTypes
 				.put("transformation", BooleanCommandExecutor.getInstance());
 		RemoveFromListCommandExecutor.getInstance();
-		commandTypes.put("auth", AuthService.getInstance());
+		commandTypes.put("authentication", AuthService.getInstance());
+		
 		commandTypes.put("interval", ValueCommandExecutor.getInstance());
 		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
+		
+		commandTypes.put("addfilter", null);
+		commandTypes.put("delfilter", null);
 	}
 	
 	public Message parse(ByteBuffer readBuffer, Message message)
@@ -52,11 +58,9 @@ public class AdminParser {
 					return null; // empty message
 				message.fillHead();
 				message.state = ParsingState.Header;
-//				readBuffer.compact();
 				break;
 			case Header:
 	
-//				readBuffer.flip();
 				do {
 					i = 0;
 					while ((b = readBuffer.get()) != '\n' && readBuffer.hasRemaining())
@@ -68,7 +72,6 @@ public class AdminParser {
 				} while (i > 1); // if is 1 it reached \r\n line
 				
 				message.state = ParsingState.Body;
-//				readBuffer.compact();
 				break;
 			case Body:
 					// filter.transform()
@@ -80,16 +83,22 @@ public class AdminParser {
 	//			}
 				
 				readBuffer.rewind();
-				return message; // hasta q no este lo de la transformacion se mmanda asi como viene
+				return message; 
 			case Complete:
+				
 				readBuffer.rewind();
 				return message;
 			}
 		}
 	}
 	
-
-	public String parseCommand(ByteBuffer readBuffer, int bytesRead)
+	public String parseRequest(ByteBuffer readBuffer, int bytesRead, Message message){
+		
+		return null;
+	}
+	
+	
+	public String parseCommand(ByteBuffer readBuffer, int bytesRead, Message message)
 			throws BadSyntaxException {
 
 		String fullCommand = new String(readBuffer.array()).substring(0,
