@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
+import ar.edu.itba.pdc.exceptions.BadSyntaxException;
 import ar.edu.itba.pdc.executors.AuthService;
 import ar.edu.itba.pdc.executors.BooleanCommandExecutor;
 import ar.edu.itba.pdc.executors.CommandExecutor;
@@ -17,15 +18,12 @@ public class PDCRequest extends Message{
 
     private String operation;
     private String param;
-    private String version;
-    private HashSet<String> implementedMethods = new HashSet<String>();
+    private String version;    
 	private Map<String, CommandExecutor> commandTypes = new HashMap<String, CommandExecutor>();
 	private ConfigurationCommands commandManager;
 	
 	public PDCRequest(){
-		implementedMethods.add("get");
-		implementedMethods.add("add");
-		implementedMethods.add("del");
+		
 		commandManager = ConfigurationCommands.getInstance();
 		commandTypes.put("statistics", BooleanCommandExecutor.getInstance());
 		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
@@ -53,17 +51,57 @@ public class PDCRequest extends Message{
 	public void fillHead() {
 		 String[] aux = firstLine.toLowerCase().split(" "); 
          if (firstLine != null && aux.length == 3) {
-                 this.operation = aux[0].toLowerCase();
-                 this.param = aux[1].toLowerCase();
+                 this.operation = aux[0].toLowerCase().trim();
+                 this.param = aux[1].toLowerCase().trim();
                  this.version = aux[2];
          }
 	}
 	
 	public String parseMessage(ByteBuffer readBuffer, int bytesRead){
-		if(implementedMethods.contains(operation)){
+		
+		
+		if(!version.equals("PDC/1.0")){
+			throw new BadSyntaxException();
+			//aca vendria error 404 NOT FOUND
+		}
+		
+		if(operation!=null && operation.equals("get")){
+			if(param!=null){
+				if(!commandTypes.containsKey(operation+param)){
+					throw new BadSyntaxException();
+					//aca vendria error 404 NOT FOUND
+				}
+				if(bytesRead!=0){
+					throw new BadSyntaxException();  //la DATA en get tiene que estar vacia
+					//aca vendria error 420 CORRUPTED DATA
+				}
+						
+			}
+			else{
+				//400 BAD REQUEST
+			}
 			
 		}
-		return null;
+		else if(operation!=null && (operation.equals("add") || operation.equals("del"))){
+			if(!commandTypes.containsKey(operation+param)){
+				throw new BadSyntaxException();
+				//aca vendria error 404 NOT FOUND
+			}
+			if(!headers.containsKey("authentication")){
+				throw new BadSyntaxException(); //falta autenticacion
+				//aca vendria error 401 UNAUTHORIZED
+			}
+			if(bytesRead==0){
+				throw new BadSyntaxException(); // la DATA no puede estar vacia
+				//aca vendria error 420 CORRUPTED DATA
+			}
+			
+			
+		}
+		
+		
+		
+		return "OK";
 	}
 	
 
