@@ -8,13 +8,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
+import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.Message;
 
 public class HttpSelectorProtocolClient implements TCPProtocol {
 
 	private HashMap<SocketChannel, ProxyConnection> proxyconnections = new HashMap<SocketChannel, ProxyConnection>();
-
+	private HTTPProxyLogger logger= HTTPProxyLogger.getInstance();
+	
 	public HttpSelectorProtocolClient(int bufSize) {
 	}
 
@@ -45,9 +47,12 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		// conn.setBytesRead(bytesRead);
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {
-				System.out.println("\n[SENT CLOSE] cliente "
+				logger.info("\n[SENT CLOSE] cliente "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
+//				System.out.println("\n[SENT CLOSE] cliente "
+//						+ channel.socket().getInetAddress() + ":"
+//						+ channel.socket().getPort());
 				if (conn.getServer() != null)
 					conn.getServer().close(); // close the server channel
 				channel.close();
@@ -55,9 +60,12 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 									// no longer useful
 				return null;
 			} else {
-				System.out.println("\n[SENT CLOSE] servidor remoto "
+				logger.info("\n[SENT CLOSE] servidor remoto "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
+//				System.out.println("\n[SENT CLOSE] servidor remoto "
+//						+ channel.socket().getInetAddress() + ":"
+//						+ channel.socket().getPort());
 				conn.getServer().close();
 				// proxyconnections.remove(channel);
 				// key.cancel();
@@ -135,9 +143,10 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		m.increaseAmountRead(byteswritten);
 		conn.handleFilters(m);
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
-		System.out.println("\n[WRITE] " + byteswritten + " to "
+		logger.info("\n[WRITE] " + byteswritten + " to "
 				+ receiver.socket().getInetAddress() + ":"
 				+ receiver.socket().getPort());
+
 
 		buf.compact(); // Make room for more data to be read in
 		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ar.edu.itba.pdc.exceptions.BadSyntaxException;
+import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.StupidAdminParser;
 
 public class HttpSelectorProtocolAdmin implements TCPProtocol {
@@ -16,6 +17,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 	private Map<SocketChannel, ChannelBuffers> list = new HashMap<SocketChannel, ChannelBuffers>();
 	private boolean logged = false;
 	private StupidAdminParser parser;
+	private HTTPProxyLogger logger=HTTPProxyLogger.getInstance();
 
 	public HttpSelectorProtocolAdmin(int bufSize) {
 		parser = new StupidAdminParser();
@@ -50,7 +52,8 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 				}
 			}
 		} catch (BadSyntaxException e) {
-			System.out.println("Bad syntax");
+			logger.info("Bad syntax");
+
 			s.write(ByteBuffer.wrap("BAD SYNTAX\n".getBytes()));
 		} catch (Exception e) {
 			logged = false;

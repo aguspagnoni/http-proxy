@@ -1,7 +1,9 @@
 package ar.edu.itba.pdc.logger;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
+
 
 public class HTTPProxyLogger {
 	
@@ -12,12 +14,12 @@ public class HTTPProxyLogger {
 	{
 		//logger = Logger.getLogger(HTTPProxyLogger.class);
 		logger=Logger.getLogger("FILE");
-
+		
 //		logger.addApender(new FileAppender(new SimpleLayout(), "logs"));
 		
 	}
 	
-	public static HTTPProxyLogger getInstance() throws IOException{
+	public static HTTPProxyLogger getInstance() {
 		if(instance==null)
 			instance=new HTTPProxyLogger();
 
