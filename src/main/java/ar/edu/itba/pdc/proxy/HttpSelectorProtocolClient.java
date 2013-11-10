@@ -41,9 +41,14 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			System.out.println("\nfallo el read");
 			return null;
 		}
-		System.out.println("\n[READ] " + bytesRead + " from "
+		
+		logger.info("\n[READ] " + bytesRead + " from "
 				+ channel.socket().getInetAddress() + ":"
 				+ channel.socket().getPort());
+		
+//		System.out.println("\n[READ] " + bytesRead + " from "
+//				+ channel.socket().getInetAddress() + ":"
+//				+ channel.socket().getPort());
 		// conn.setBytesRead(bytesRead);
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {

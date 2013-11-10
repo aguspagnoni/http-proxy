@@ -1,7 +1,9 @@
 package ar.edu.itba.pdc.executors;
 
+import ar.edu.itba.pdc.parser.PDCResponse;
+
 
 public interface CommandExecutor {
 
-	public String execute(String command, String value);
+	public PDCResponse execute(String command, String value);
 }

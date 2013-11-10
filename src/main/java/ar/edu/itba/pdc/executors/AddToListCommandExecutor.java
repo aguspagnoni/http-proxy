@@ -1,6 +1,7 @@
 package ar.edu.itba.pdc.executors;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
+import ar.edu.itba.pdc.parser.PDCResponse;
 
 public class AddToListCommandExecutor extends AbstractCommandExecutor {
 
@@ -17,7 +18,7 @@ public class AddToListCommandExecutor extends AbstractCommandExecutor {
 		commandManager = ConfigurationCommands.getInstance();
 	}
 	
-	public String execute(String command, String value) {	
+	public PDCResponse execute(String command, String value) {	
 		String oldValue = "";
 		if (commandManager.hasProperty(command))
 			oldValue = commandManager.getProperty(command);

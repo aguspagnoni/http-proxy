@@ -29,9 +29,9 @@ public class PDCRequest extends Message{
 		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
 		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
 		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
-		commandTypes
-				.put("transformation", BooleanCommandExecutor.getInstance());
-		RemoveFromListCommandExecutor.getInstance();
+//		commandTypes
+//				.put("transformation", BooleanCommandExecutor.getInstance());
+//		RemoveFromListCommandExecutor.getInstance();
 		commandTypes.put("authentication", AuthService.getInstance());
 		
 //		commandTypes.put("interval", ValueCommandExecutor.getInstance());
@@ -121,10 +121,10 @@ public class PDCRequest extends Message{
 			responseToAdmin=commandTypes.get(operation+param).execute(operation, param);
 		}
 		else{
-			String[] auth=headers.get("authentication").split(";");
-			responseToAdmin=commandTypes.get("authentication").execute("auth", auth[1]); //no estamos contemplando el usuario, habría que ver de cambiarlo en el executor o ver cómo hacemos
-			if(responseToAdmin!=null){
-				responseToAdmin=commandTypes.get(operation+param).execute(command, value); //ver como sería esto
+			String auth=headers.get("authentication");
+			responseToAdmin=commandTypes.get("authentication").execute("auth", auth); //no estamos contemplando el usuario, habría que ver de cambiarlo en el executor o ver cómo hacemos
+			if(responseToAdmin==null){
+				//responseToAdmin=commandTypes.get(operation+param).execute(command, value); //ver como sería esto
 			}
 		}
 		if(responseToAdmin!=null){

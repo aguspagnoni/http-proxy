@@ -19,21 +19,21 @@ public class AdminParser {
 	private ConfigurationCommands commandManager;
 	
 	public AdminParser(){
-		commandManager = ConfigurationCommands.getInstance();
-	//	commandTypes.put("statistics", BooleanCommandExecutor.getInstance()); //que se supone que hace esto?
-		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
-		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
-		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
-		commandTypes
-				.put("transformation", BooleanCommandExecutor.getInstance());
-		RemoveFromListCommandExecutor.getInstance();
-		commandTypes.put("authentication", AuthService.getInstance());
-		
-//		commandTypes.put("interval", ValueCommandExecutor.getInstance());
-//		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
-		
-		commandTypes.put("addfilter", null);
-		commandTypes.put("delfilter", null);
+//		commandManager = ConfigurationCommands.getInstance();
+//	//	commandTypes.put("statistics", BooleanCommandExecutor.getInstance()); //que se supone que hace esto?
+//		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
+//		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
+//		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
+//		commandTypes
+//				.put("transformation", BooleanCommandExecutor.getInstance());
+//		RemoveFromListCommandExecutor.getInstance();
+//		commandTypes.put("authentication", AuthService.getInstance());
+//		
+////		commandTypes.put("interval", ValueCommandExecutor.getInstance());
+////		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
+//		
+//		commandTypes.put("addfilter", null);
+//		commandTypes.put("delfilter", null);
 	}
 	
 	public Message parse(ByteBuffer readBuffer, PDCRequest message)
