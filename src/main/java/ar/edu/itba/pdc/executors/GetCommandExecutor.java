@@ -28,14 +28,13 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 		String ans = null;
 		
 		if (value.equals("accesses")) {
-				ans=Integer.toString(HttpProxyData.getInstance().getAccesses());
-			// getLogger().info("Statistics answered to administrator");
-			//ans = StatisticsFilter.getInstance().execute();
+				ans=Integer.toString(StatisticsFilter.getInstance().getAccesses());
+			
 		} else if(value.equals("txbytes")){
-			ans=Integer.toString(HttpProxyData.getInstance().getTxBytes());
+			ans=Integer.toString(StatisticsFilter.getInstance().gettxBytes());
 		}
 		else if(value.equals("histogram")){
-			Map<Integer,Integer> hist=HttpProxyData.getInstance().getHistogram();
+			Map<Integer,Integer> hist=StatisticsFilter.getInstance().getHistogram();
 			ans="";
 			for(Entry<Integer, Integer> pairs:hist.entrySet()){
 				ans=ans+pairs.getKey()+":"+pairs.getValue()+'\n';
