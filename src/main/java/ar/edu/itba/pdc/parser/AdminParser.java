@@ -20,7 +20,7 @@ public class AdminParser {
 	
 	public AdminParser(){
 		commandManager = ConfigurationCommands.getInstance();
-		commandTypes.put("statistics", BooleanCommandExecutor.getInstance());
+	//	commandTypes.put("statistics", BooleanCommandExecutor.getInstance()); //que se supone que hace esto?
 		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
 		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
 		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
@@ -29,8 +29,8 @@ public class AdminParser {
 		RemoveFromListCommandExecutor.getInstance();
 		commandTypes.put("authentication", AuthService.getInstance());
 		
-		commandTypes.put("interval", ValueCommandExecutor.getInstance());
-		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
+//		commandTypes.put("interval", ValueCommandExecutor.getInstance());
+//		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
 		
 		commandTypes.put("addfilter", null);
 		commandTypes.put("delfilter", null);
@@ -85,7 +85,7 @@ public class AdminParser {
 				readBuffer.rewind();
 				return message; 
 			case Complete:
-				message.parseMessage(readBuffer, i);
+				message.parseMessage(readBuffer, i); //aca es donde se hace la logica del parseo y se ejecutan los comandos
 				readBuffer.rewind();
 				return message;
 			}
@@ -93,29 +93,4 @@ public class AdminParser {
 	}
 	
 	
-	/**
-	 * Once the commands were parsed, takes the appropriate action using the
-	 * executors stored in the commandTypes map.
-	 * 
-	 * @param commands
-	 * @return
-	 * @throws BadSyntaxException
-	 */
-
-	private String takeActions(Map<String, String> commands)
-			throws BadSyntaxException {
-
-		String responseToAdmin = null;
-		for (String cmd : commands.keySet()) {
-			responseToAdmin = commandTypes.get(cmd).execute(cmd,
-					commands.get(cmd));
-
-			if (responseToAdmin != null) {
-				commandManager.saveFile();
-			} else {
-				throw new BadSyntaxException();
-			}
-		}
-		return responseToAdmin + '\n';
-	}
 }

@@ -25,7 +25,7 @@ public class PDCRequest extends Message{
 	public PDCRequest(){
 		
 		commandManager = ConfigurationCommands.getInstance();
-		commandTypes.put("statistics", BooleanCommandExecutor.getInstance());
+//		commandTypes.put("statistics", BooleanCommandExecutor.getInstance());
 		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
 		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
 		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
@@ -34,8 +34,8 @@ public class PDCRequest extends Message{
 		RemoveFromListCommandExecutor.getInstance();
 		commandTypes.put("authentication", AuthService.getInstance());
 		
-		commandTypes.put("interval", ValueCommandExecutor.getInstance());
-		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
+//		commandTypes.put("interval", ValueCommandExecutor.getInstance());
+//		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
 		
 		commandTypes.put("addfilter", null);
 		commandTypes.put("delfilter", null);
@@ -43,7 +43,9 @@ public class PDCRequest extends Message{
 	
 	@Override
 	public boolean isFinished() {
-		// TODO Auto-generated method stub
+		if(operation!=null && param!=null && version!=null){
+			return true;
+		}
 		return false;
 	}
 
@@ -78,6 +80,7 @@ public class PDCRequest extends Message{
 						
 			}
 			else{
+				throw new BadSyntaxException();
 				//400 BAD REQUEST
 			}
 			
@@ -99,9 +102,8 @@ public class PDCRequest extends Message{
 			
 		}
 		
+		return takeActions();
 		
-		
-		return "OK";
 	}
 	
 	/**
@@ -113,22 +115,28 @@ public class PDCRequest extends Message{
 	 * @throws BadSyntaxException
 	 */
 
-	private String takeActions(Map<String, String> commands)
-			throws BadSyntaxException {
-
-		String responseToAdmin = null;
-		for (String cmd : commands.keySet()) {
-			responseToAdmin = commandTypes.get(cmd).execute(cmd,
-					commands.get(cmd));
-
-			if (responseToAdmin != null) {
-				commandManager.saveFile();
-			} else {
-				throw new BadSyntaxException();
+	private String takeActions() throws BadSyntaxException {
+		String responseToAdmin=null;
+		if(!operation.equals("get")){
+			responseToAdmin=commandTypes.get(operation+param).execute(operation, param);
+		}
+		else{
+			String[] auth=headers.get("authentication").split(";");
+			responseToAdmin=commandTypes.get("authentication").execute("auth", auth[1]); //no estamos contemplando el usuario, habría que ver de cambiarlo en el executor o ver cómo hacemos
+			if(responseToAdmin!=null){
+				responseToAdmin=commandTypes.get(operation+param).execute(command, value); //ver como sería esto
 			}
 		}
-		return responseToAdmin + '\n';
+		if(responseToAdmin!=null){
+			commandManager.saveFile();
+		} else {
+			throw new BadSyntaxException();
+		}
+		
+		
+		return responseToAdmin;
 	}
 
+	
 
 }
