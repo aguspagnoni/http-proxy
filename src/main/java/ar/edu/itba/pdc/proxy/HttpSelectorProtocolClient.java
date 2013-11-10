@@ -131,9 +131,9 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		System.out.println(new String(buf.array(), 0, 100));
 
 		byteswritten = receiver.write(buf);
-		Message m = conn.getMessage(channel);
-		m.increaseAmountRead(byteswritten);
-		conn.handleFilters(m);
+//		Message m = conn.getMessage(channel);
+//		m.increaseAmountRead(byteswritten);
+//		conn.handleFilters(m);
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
 		System.out.println("\n[WRITE] " + byteswritten + " to "
 				+ receiver.socket().getInetAddress() + ":"
