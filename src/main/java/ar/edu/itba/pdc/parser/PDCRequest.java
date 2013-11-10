@@ -59,43 +59,43 @@ public class PDCRequest extends Message{
          }
 	}
 	
-	public String parseMessage(ByteBuffer readBuffer, int bytesRead){
+	public PDCResponse parseMessage(ByteBuffer readBuffer, int bytesRead){
 		
 		
 		if(!version.equals("PDC/1.0")){
-			throw new BadSyntaxException();
+			return new PDCResponse(404, "PDC/1.0");
 			//aca vendria error 404 NOT FOUND
 		}
 		
 		if(operation!=null && operation.equals("get")){
 			if(param!=null){
 				if(!commandTypes.containsKey(operation+param)){
-					throw new BadSyntaxException();
+					return new PDCResponse(404, "PDC/1.0");
 					//aca vendria error 404 NOT FOUND
 				}
 				if(bytesRead!=0){
-					throw new BadSyntaxException();  //la DATA en get tiene que estar vacia
+					return new PDCResponse(420, "PDC/1.0");  //la DATA en get tiene que estar vacia
 					//aca vendria error 420 CORRUPTED DATA
 				}
 						
 			}
 			else{
-				throw new BadSyntaxException();
+				return new PDCResponse(400, "PDC/1.0");
 				//400 BAD REQUEST
 			}
 			
 		}
 		else if(operation!=null && (operation.equals("add") || operation.equals("del"))){
 			if(!commandTypes.containsKey(operation+param)){
-				throw new BadSyntaxException();
+				return new PDCResponse(404, "PDC/1.0");
 				//aca vendria error 404 NOT FOUND
 			}
 			if(!headers.containsKey("authentication")){
-				throw new BadSyntaxException(); //falta autenticacion
+				return new PDCResponse(401, "PDC/1.0"); //falta autenticacion
 				//aca vendria error 401 UNAUTHORIZED
 			}
 			if(bytesRead==0){
-				throw new BadSyntaxException(); // la DATA no puede estar vacia
+				return new PDCResponse(420, "PDC/1.0"); // la DATA no puede estar vacia
 				//aca vendria error 420 CORRUPTED DATA
 			}
 			
@@ -115,8 +115,8 @@ public class PDCRequest extends Message{
 	 * @throws BadSyntaxException
 	 */
 
-	private String takeActions() throws BadSyntaxException {
-		String responseToAdmin=null;
+	private PDCResponse takeActions() throws BadSyntaxException {
+		PDCResponse responseToAdmin=null;
 		if(!operation.equals("get")){
 			responseToAdmin=commandTypes.get(operation+param).execute(operation, param);
 		}

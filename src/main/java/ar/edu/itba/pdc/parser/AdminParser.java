@@ -85,9 +85,9 @@ public class AdminParser {
 				readBuffer.rewind();
 				return message; 
 			case Complete:
-				message.parseMessage(readBuffer, i); //aca es donde se hace la logica del parseo y se ejecutan los comandos
+				PDCResponse response=message.parseMessage(readBuffer, i); //aca es donde se hace la logica del parseo y se ejecutan los comandos
 				readBuffer.rewind();
-				return message;
+				return response;
 			}
 		}
 	}
