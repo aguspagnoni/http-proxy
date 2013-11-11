@@ -3,6 +3,8 @@ package ar.edu.itba.pdc.parser;
 import java.util.HashSet;
 import java.util.Map;
 
+import ar.edu.itba.pdc.parser.enumerations.ParsingState;
+
 public class HttpRequest extends Message {
         
         private HashSet<String> implementedMethods = new HashSet<String>();
@@ -47,8 +49,9 @@ public class HttpRequest extends Message {
         public boolean isFinished() {
                 if (headers.get("host") == null)
                         return false;
-                if (headers.get("content-length") != null) 
-                	setContentLength(Integer.valueOf(headers.get("content-length").trim()));
+                if (headers.get("content-length") == null)
+                	return state.equals(ParsingState.Body);
+                setContentLength(Integer.valueOf(headers.get("content-length").trim()));
                 return getContentLength() == getAmountRead() - getHeadersLength();
         }
 

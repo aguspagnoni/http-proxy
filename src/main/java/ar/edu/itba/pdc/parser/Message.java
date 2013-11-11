@@ -42,8 +42,8 @@ public abstract class Message {
 		return headersLength;
 	}
 
-	public void setHeadersLength(int headersLength) {
-		this.headersLength = headersLength;
+	public void increaseHeadersLength(int headersLength) {
+		this.headersLength += headersLength;
 	}
 
 	public void setContentLength(int length) {

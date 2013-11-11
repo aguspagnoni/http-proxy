@@ -16,7 +16,7 @@ public class HttpParser {
 		if (message == null)
 			throw new InvalidMessageException();
 		byte[] auxBuf = ByteBuffer.allocate(8192).array();
-		readBuffer.flip();
+		readBuffer.flip(); // set the buffer ready to be read
 		
 		byte b;
 		int i = 0;
@@ -27,28 +27,32 @@ public class HttpParser {
 				while ((b = readBuffer.get()) != '\n' && readBuffer.hasRemaining())
 					auxBuf[i++] = b;
 	
-				message.firstLine = new String(auxBuf);
+				if (auxBuf[i-1] == '\r')
+					message.firstLine = new String(auxBuf, 0, i-1);
+				else
+					message.firstLine = new String(auxBuf);
 				if (message.firstLine == null || message.firstLine.length() == 0)
 					return null; // empty message
 				message.fillHead();
 				message.state = ParsingState.Header;
-//				readBuffer.compact();
 				break;
 			case Header:
-	
-//				readBuffer.flip();
+				
+				message.increaseHeadersLength(readBuffer.remaining()); //  check if this is done correctly
 				do {
 					i = 0;
-					while ((b = readBuffer.get()) != '\n' && readBuffer.hasRemaining())
+					while (readBuffer.hasRemaining() && (b = readBuffer.get()) != '\n')
 						auxBuf[i++] = b;
 					
-					if (i > 1) // last case
-						message.addHeader(new String(auxBuf, 0, i-1));
+					if (i > 1) { // last case
+						if (auxBuf[i-1] == '\r')
+							message.addHeader(new String(auxBuf, 0, i-1));
+						else
+							message.addHeader(new String(auxBuf));
+					}
 					
 				} while (i > 1); // if is 1 it reached \r\n line
-				
 				message.state = ParsingState.Body;
-//				readBuffer.compact();
 				break;
 			case Body:
 					// filter.transform()
@@ -59,10 +63,10 @@ public class HttpParser {
 //						readBuffer.put(readBuffer.arrayOffset() + i, b);
 	//			}
 				
-				readBuffer.rewind();
+				readBuffer.rewind(); // set the buffer ready to a write action
 				return message; // hasta q no este lo de la transformacion se mmanda asi como viene
 			case Complete:
-				readBuffer.rewind();
+				readBuffer.rewind(); // set the buffer ready to a write action
 				return message;
 			}
 		}

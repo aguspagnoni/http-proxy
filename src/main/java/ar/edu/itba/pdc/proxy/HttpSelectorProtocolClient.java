@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.HashMap;
 
 import ar.edu.itba.pdc.parser.HttpRequest;
@@ -34,7 +35,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		long bytesRead = 0;
 		try {
 			bytesRead = channel.read(buf);
-			System.out.println(new String(buf.array(), 0, 100));
+//			System.out.println(new String(buf.array(), 0, 100));
 		} catch (IOException e) {
 			System.out.println("\nfallo el read");
 			return null;
@@ -45,23 +46,40 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		// conn.setBytesRead(bytesRead);
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {
-				System.out.println("\n[SENT CLOSE] cliente "
+				System.out.println("\n[RECEIVED CLOSE] from cliente "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
-				if (conn.getServer() != null)
+				if (conn.getServer() != null) {
 					conn.getServer().close(); // close the server channel
+					System.out.println("\n[SENT CLOSE] to servidor remoto "
+							+ conn.getServer().socket().getInetAddress() + ":"
+							+ conn.getServer().socket().getPort());
+				}
+				
 				channel.close();
-				key.attach(null); // de-reference the proxy connection as it is
+				System.out.println("\n[SENT CLOSE] to cliente "
+						+ channel.socket().getInetAddress() + ":"
+						+ channel.socket().getPort());
+				proxyconnections.remove(channel);
+				proxyconnections.remove(conn.getServer());
+				key.cancel();
+				// de-reference the proxy connection as it is
 									// no longer useful
 				return null;
 			} else {
-				System.out.println("\n[SENT CLOSE] servidor remoto "
+				System.out.println("\n[RECEIVED CLOSE] from servidor remoto "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
 				conn.getServer().close();
+				System.out.println("\n[SENT CLOSE] to servidor remoto "
+						+ conn.getServer().socket().getInetAddress() + ":"
+						+ conn.getServer().socket().getPort());
 				// proxyconnections.remove(channel);
-				// key.cancel();
+//				key.cancel();
+//				channel.write(buf.rewind());
 				conn.resetIncompleteMessage();
+//				proxyconnections.remove(channel);
+				proxyconnections.remove(conn.getServer());
 				conn.resetServer();
 			}
 
@@ -89,14 +107,25 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				serverchannel.configureBlocking(false);
 
 				int port = uri.getPort() == -1 ? 80 : uri.getPort();
-				if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
-						port))) {
-					// if (!serverchannel.connect(new
-					// InetSocketAddress("localhost",
-					// 8888))) {
-					while (!serverchannel.finishConnect()) {
-						System.out.print("*");
+				try {
+					if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
+							port))) {
+	//					 if (!serverchannel.connect(new
+	//					 InetSocketAddress("localhost",
+	//					 8888))) {
+						while (!serverchannel.finishConnect()) {
+							System.out.print("*");
+						}
 					}
+				} catch (UnresolvedAddressException e) { //TODO HACERLO DE LA FORMA BIEN. AGARRANDOLO DE UN ARCHIVO
+					String notFound = "HTTP/1.1 404 BAD REQUEST\r\n\r\n<html><body>404 Not Found<br><br>This may be a DNS problem or the page you were looking for doesn't exist.</body></html>\r\n";
+					ByteBuffer resp = ByteBuffer.allocate(notFound.length());
+					resp.put(notFound.getBytes());
+					resp.flip();
+					channel.write(resp);
+					channel.close();
+					proxyconnections.remove(channel);
+					return null;
 				}
 				// serverchannel.register(key.selector(),
 				// SelectionKey.OP_WRITE);
@@ -104,6 +133,9 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				proxyconnections.put(serverchannel, conn);
 			}
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+			if (message.isFinished()) {
+				System.out.println("finisheo");
+			}
 			return serverchannel;
 		}
 
@@ -128,7 +160,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		int byteswritten = 0;
 		boolean hasRemaining = true;
 		// buf.flip(); // Prepare buffer for writing
-		System.out.println(new String(buf.array(), 0, 100));
+//		System.out.println(new String(buf.array(), 0, 100));
 
 		byteswritten = receiver.write(buf);
 //		Message m = conn.getMessage(channel);

@@ -54,7 +54,7 @@ public class HttpServerSelector {
 			Iterator<SelectionKey> keyIter = selector.selectedKeys().iterator();
 			while (keyIter.hasNext()) {
 				SelectionKey key = keyIter.next();
-				if (key.isAcceptable()) {
+				if (key.isValid() && key.isAcceptable()) {
 					SocketChannel newChannel = ((ServerSocketChannel) key
 							.channel()).accept();
 					newChannel.configureBlocking(false);
@@ -68,7 +68,7 @@ public class HttpServerSelector {
 
 					// protocol.handleAccept(key);
 				}
-				if (key.isReadable()) {
+				if (key.isValid() && key.isReadable()) {
 					TCPProtocol handler = handlerMap.get(key.channel());
 					if (handler != null) {// for rare connections
 						SocketChannel channel = handler.handleRead(key);
