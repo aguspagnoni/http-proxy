@@ -1,6 +1,7 @@
 package ar.edu.itba.pdc.executors;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
+import ar.edu.itba.pdc.parser.PDCResponse;
 
 public class ValueCommandExecutor extends AbstractCommandExecutor {
 	
@@ -17,7 +18,7 @@ public class ValueCommandExecutor extends AbstractCommandExecutor {
 		commandManager = ConfigurationCommands.getInstance();
 	}
 	
-	public String execute(String command, String value) {	
+	public PDCResponse execute(String command, String value) {	
 
 		Integer newValue;
 		
@@ -32,7 +33,8 @@ public class ValueCommandExecutor extends AbstractCommandExecutor {
 				System.err.println(); //REMOVE
 				//StatisticsFilter.getInstance().setByteUnit(newValue);
 		}
-		return "OK";
+		return null;
+		//return "OK";
 	}
 
 }

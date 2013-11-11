@@ -1,6 +1,7 @@
 package ar.edu.itba.pdc.executors;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
+import ar.edu.itba.pdc.parser.PDCResponse;
 
 public class RemoveFromListCommandExecutor extends AbstractCommandExecutor {
 
@@ -17,7 +18,7 @@ public class RemoveFromListCommandExecutor extends AbstractCommandExecutor {
 		commandManager = ConfigurationCommands.getInstance();
 	}
 	
-	public String execute(String command, String value) {	
+	public PDCResponse execute(String command, String value) {	
 		String newValue = "";
 		String oldValue = "";
 		
@@ -38,8 +39,8 @@ public class RemoveFromListCommandExecutor extends AbstractCommandExecutor {
 		
 		commandManager.setProperty("silenceuser", newValue.substring(1));
 	//	getLogger().info("Removed " + value + " from " + command + " list");
-		
-		return "OK";
+		return null;
+		//return "OK";
 	}
 	
 }

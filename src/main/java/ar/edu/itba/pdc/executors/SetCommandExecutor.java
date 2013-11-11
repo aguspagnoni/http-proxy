@@ -1,6 +1,7 @@
 package ar.edu.itba.pdc.executors;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
+import ar.edu.itba.pdc.parser.PDCResponse;
 
 public class SetCommandExecutor extends AbstractCommandExecutor {
 
@@ -17,7 +18,7 @@ public class SetCommandExecutor extends AbstractCommandExecutor {
 		commandManager = ConfigurationCommands.getInstance();
 	}
 	
-	public String execute(String command, String value) {
+	public PDCResponse execute(String command, String value) {
 		String commandLower = command.toLowerCase();
 		if (commandLower.equals("interval")) {
 			try {
@@ -28,7 +29,8 @@ public class SetCommandExecutor extends AbstractCommandExecutor {
 			}
 			this.commandManager.setProperty(commandLower, value);
 			//getLogger().info("Changed interval to " + value);
-			return "OK";
+			return null;
+			//return "OK";
 		}
 		return null;
 					

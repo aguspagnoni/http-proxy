@@ -34,7 +34,8 @@ public class AddToListCommandExecutor extends AbstractCommandExecutor {
 			commandManager.setProperty(command, newValue);
 		
 		//getLogger().info("Added " + value + " to " + command + " list");
-		return "OK";
+		//return "OK";
+		return null;
 	}
 
 }

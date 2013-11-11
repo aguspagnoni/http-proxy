@@ -29,7 +29,7 @@ public class StupidAdminParser {
 		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
 	}
 
-	public String parseCommand(ByteBuffer readBuffer, int bytesRead)
+	public PDCResponse parseCommand(ByteBuffer readBuffer, int bytesRead)
 			throws BadSyntaxException {
 
 		String fullCommand = new String(readBuffer.array()).substring(0,
@@ -66,10 +66,10 @@ public class StupidAdminParser {
 	 * @throws BadSyntaxException
 	 */
 
-	private String takeActions(Map<String, String> commands)
+	private PDCResponse takeActions(Map<String, String> commands)
 			throws BadSyntaxException {
 
-		String responseToAdmin = null;
+		PDCResponse responseToAdmin = null;
 		for (String cmd : commands.keySet()) {
 			responseToAdmin = commandTypes.get(cmd).execute(cmd,
 					commands.get(cmd));
@@ -80,6 +80,6 @@ public class StupidAdminParser {
 				throw new BadSyntaxException();
 			}
 		}
-		return responseToAdmin + '\n';
+		return responseToAdmin;
 	}
 }

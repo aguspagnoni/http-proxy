@@ -67,4 +67,9 @@ public class PDCResponse extends Message{
 		
 	}
 
+	public byte[] getBytes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
