@@ -51,7 +51,7 @@ public class PDCRequest extends Message{
 
 	@Override
 	public void fillHead() {
-		 String[] aux = firstLine.toLowerCase().split(" "); 
+		 String[] aux = firstLine.split(" "); 
          if (firstLine != null && aux.length == 3) {
                  this.operation = aux[0].toLowerCase().trim();
                  this.param = aux[1].toLowerCase().trim();

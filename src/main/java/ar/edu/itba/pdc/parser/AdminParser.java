@@ -91,7 +91,10 @@ public class AdminParser implements AdministratorParser {
 						// mensaje se termino.
 				// readBuffer.put(readBuffer.arrayOffset() + i, b);
 				// }
-
+				if(message.isFinished()){
+					message.state=ParsingState.Complete;
+					break;
+				}
 				readBuffer.rewind();
 				return null;
 			case Complete:

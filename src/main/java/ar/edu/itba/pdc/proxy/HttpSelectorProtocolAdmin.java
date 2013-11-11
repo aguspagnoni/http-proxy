@@ -40,23 +40,26 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 			if ((response = (PDCResponse) parser
 					.parse(channelBuffers.getBuffer(BufferType.read),
 							channelBuffers.getRequest())) != null) {
-				if (logged || response.equals("PASSWORD OK\n")) {
-					if (logged && response.equals("PASSWORD OK\n")) {
-						response = null;
-						// response = "ALREADY LOGGED\n";
-					}
-
-					logged = true;
-					s.write(ByteBuffer.wrap(response.getBytes()));
-				} else if (response.equals("INVALID PASSWORD\n")) {
-					if (logged) {
-						response = null;
-						// response = "ALREADY LOGGED\n";
-					}
-					s.write(ByteBuffer.wrap(response.getBytes()));
-				} else {
-					s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
-				}
+				String resp=response.getVersion() +" "+Integer.toString(response.getCode()) + " "+response.getVerboseCode()+'\n';
+				s.write(ByteBuffer.wrap(resp.getBytes()));
+				s.write(ByteBuffer.wrap(response.getData().getBytes()));
+//				if (logged || response.equals("PASSWORD OK\n")) {
+//					if (logged && response.equals("PASSWORD OK\n")) {
+//						response = null;
+//						// response = "ALREADY LOGGED\n";
+//					}
+//
+//					logged = true;
+//					s.write(ByteBuffer.wrap(response.getBytes()));
+//				} else if (response.equals("INVALID PASSWORD\n")) {
+//					if (logged) {
+//						response = null;
+//						// response = "ALREADY LOGGED\n";
+//					}
+//					s.write(ByteBuffer.wrap(response.getBytes()));
+//				} else {
+//					s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
+//				}
 			}
 		} catch (BadSyntaxException e) {
 			logger.info("Bad syntax");

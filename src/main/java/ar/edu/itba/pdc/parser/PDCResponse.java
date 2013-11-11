@@ -31,6 +31,9 @@ public class PDCResponse extends Message{
 		this.verboseCode=codeMapping.get(code);
 	}
 	
+	public String getVerboseCode(){
+		return this.verboseCode;
+	}
 	
 	public int getCode(){
 		return this.code;
