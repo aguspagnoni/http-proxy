@@ -93,7 +93,7 @@ public class AdminParser implements AdministratorParser {
 				// }
 
 				readBuffer.rewind();
-				return message;
+				return null;
 			case Complete:
 				PDCResponse response = message.parseMessage(readBuffer, i); // aca
 																			// es
