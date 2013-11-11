@@ -9,18 +9,19 @@ import java.util.Map;
 
 import ar.edu.itba.pdc.exceptions.BadSyntaxException;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
+import ar.edu.itba.pdc.parser.AdminParser;
+import ar.edu.itba.pdc.parser.PDCRequest;
 import ar.edu.itba.pdc.parser.PDCResponse;
-import ar.edu.itba.pdc.parser.StupidAdminParser;
 
 public class HttpSelectorProtocolAdmin implements TCPProtocol {
 
 	private Map<SocketChannel, ChannelBuffers> list = new HashMap<SocketChannel, ChannelBuffers>();
 	private boolean logged = false;
-	private StupidAdminParser parser;
+	private AdminParser parser;
 	private HTTPProxyLogger logger = HTTPProxyLogger.getInstance();
 
 	public HttpSelectorProtocolAdmin(int bufSize) {
-		parser = new StupidAdminParser();
+		parser = new AdminParser();
 
 	}
 
@@ -36,8 +37,9 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 		int bytesRead = s.read(channelBuffers.getBuffer(BufferType.read));
 		try {
 			PDCResponse response;
-			if ((response = parser.parseCommand(
-					channelBuffers.getBuffer(BufferType.read), bytesRead)) != null) {
+			if ((response = (PDCResponse) parser
+					.parse(channelBuffers.getBuffer(BufferType.read),
+							new PDCRequest())) != null) {
 				if (logged || response.equals("PASSWORD OK\n")) {
 					if (logged && response.equals("PASSWORD OK\n")) {
 						response = null;

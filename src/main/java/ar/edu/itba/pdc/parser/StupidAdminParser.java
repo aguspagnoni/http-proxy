@@ -13,7 +13,7 @@ import ar.edu.itba.pdc.executors.GetCommandExecutor;
 import ar.edu.itba.pdc.executors.RemoveFromListCommandExecutor;
 import ar.edu.itba.pdc.executors.ValueCommandExecutor;
 
-public class StupidAdminParser {
+public class StupidAdminParser implements AdministratorParser {
 	private Map<String, CommandExecutor> commandTypes = new HashMap<String, CommandExecutor>();
 	private ConfigurationCommands commandManager;
 
@@ -29,9 +29,9 @@ public class StupidAdminParser {
 		commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
 	}
 
-	public PDCResponse parseCommand(ByteBuffer readBuffer, int bytesRead)
-			throws BadSyntaxException {
-
+	public Message parse(ByteBuffer readBuffer, PDCRequest message)
+			throws BadSyntaxException, InvalidMessageException {
+		int bytesRead = 1000; // hardcoded MALLLLLLLLLLLL
 		String fullCommand = new String(readBuffer.array()).substring(0,
 				bytesRead);
 		Map<String, String> commands = new HashMap<String, String>();
@@ -82,4 +82,5 @@ public class StupidAdminParser {
 		}
 		return responseToAdmin;
 	}
+
 }
