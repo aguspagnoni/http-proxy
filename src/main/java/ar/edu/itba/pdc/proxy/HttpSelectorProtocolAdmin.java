@@ -39,7 +39,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 			PDCResponse response;
 			if ((response = (PDCResponse) parser
 					.parse(channelBuffers.getBuffer(BufferType.read),
-							new PDCRequest())) != null) {
+							channelBuffers.getRequest())) != null) {
 				if (logged || response.equals("PASSWORD OK\n")) {
 					if (logged && response.equals("PASSWORD OK\n")) {
 						response = null;

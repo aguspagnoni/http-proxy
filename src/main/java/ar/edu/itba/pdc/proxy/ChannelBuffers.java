@@ -4,14 +4,18 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import ar.edu.itba.pdc.parser.PDCRequest;
+
 public class ChannelBuffers {
 	private static final int BUFFER_SIZE = 4096;
 
 	private Map<BufferType, ByteBuffer> buffers;
+	private PDCRequest req;
 
 	public ChannelBuffers() {
 		initializeMap(ByteBuffer.allocate(BUFFER_SIZE),
 				ByteBuffer.allocate(BUFFER_SIZE));
+		req=new PDCRequest();
 	}
 
 	public ChannelBuffers(ByteBuffer readBuffer, ByteBuffer writeBuffer) {
@@ -153,5 +157,13 @@ public class ChannelBuffers {
 		return buffers.get(type) != null
 				&& (buffers.get(type).capacity() != buffers.get(type)
 						.remaining());
+	}
+	
+	/**
+	 * Returns the PDCRequest asociated to that channelBuffers
+	 * @return
+	 */
+	public PDCRequest getRequest(){
+		return this.req;
 	}
 }
