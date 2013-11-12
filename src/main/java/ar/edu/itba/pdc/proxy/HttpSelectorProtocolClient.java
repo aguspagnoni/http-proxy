@@ -30,7 +30,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		// Client socket channel has pending data
 		SocketChannel channel = (SocketChannel) key.channel();
 		ProxyConnection conn = proxyconnections.get(channel);
-
+		
 		ByteBuffer buf = conn.getBuffer(channel);
 		long bytesRead = 0;
 		try {
@@ -38,6 +38,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 //			System.out.println(new String(buf.array(), 0, 100));
 		} catch (IOException e) {
 			System.out.println("\nfallo el read");
+			e.printStackTrace();
 			return null;
 		}
 		System.out.println("\n[READ] " + bytesRead + " from "
@@ -50,19 +51,39 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
 				if (conn.getServer() != null) {
+					
+					/* ----------------- CLOSE ----------------- */
+					
 					conn.getServer().close(); // close the server channel
+					
+					/* ----------------- CLOSE ----------------- */
 					System.out.println("\n[SENT CLOSE] to servidor remoto "
 							+ conn.getServer().socket().getInetAddress() + ":"
 							+ conn.getServer().socket().getPort());
 				}
 				
+				
+				/* ----------------- CLOSE ----------------- */
+				
 				channel.close();
+				
+				/* ----------------- CLOSE ----------------- */
 				System.out.println("\n[SENT CLOSE] to cliente "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
+				
+				/* ----------------- REMOVE ----------------- */
+				
 				proxyconnections.remove(channel);
 				proxyconnections.remove(conn.getServer());
+				
+				/* ----------------- REMOVE ----------------- */
+				
+				/* ----------------- CANCEL ----------------- */
 				key.cancel();
+				/* ----------------- CANCEL ----------------- */
+				
+				
 				// de-reference the proxy connection as it is
 									// no longer useful
 				return null;
@@ -70,7 +91,16 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				System.out.println("\n[RECEIVED CLOSE] from servidor remoto "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
+				
+				/* ----------------- CLOSE ----------------- */
+				
 				conn.getServer().close();
+				
+				/* ----------------- CLOSE ----------------- */
+				
+				
+//				channel.close();
+				
 				System.out.println("\n[SENT CLOSE] to servidor remoto "
 						+ conn.getServer().socket().getInetAddress() + ":"
 						+ conn.getServer().socket().getPort());
@@ -100,7 +130,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 					url = ((HttpRequest) message).getURI();
 				String[] splitted = url.split("http://");
 				url = "http://"
-						+ (splitted.length == 2 ? splitted[1] : splitted[0]);
+						+ (splitted.length >= 2 ? splitted[1] : splitted[0]);
 				URL uri = new URL(url);
 
 				serverchannel = SocketChannel.open();
@@ -114,7 +144,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 	//					 InetSocketAddress("localhost",
 	//					 8888))) {
 						while (!serverchannel.finishConnect()) {
-							System.out.print("*");
+							Thread.sleep(30); // avoid massive polling
 						}
 					}
 				} catch (UnresolvedAddressException e) { //TODO HACERLO DE LA FORMA BIEN. AGARRANDOLO DE UN ARCHIVO
@@ -126,6 +156,8 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 					channel.close();
 					proxyconnections.remove(channel);
 					return null;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 				// serverchannel.register(key.selector(),
 				// SelectionKey.OP_WRITE);
@@ -133,6 +165,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				proxyconnections.put(serverchannel, conn);
 			}
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+			channel.register(key.selector(), SelectionKey.OP_WRITE);
 			if (message.isFinished()) {
 				System.out.println("finisheo");
 			}
@@ -159,13 +192,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 
 		int byteswritten = 0;
 		boolean hasRemaining = true;
-		// buf.flip(); // Prepare buffer for writing
-//		System.out.println(new String(buf.array(), 0, 100));
-
 		byteswritten = receiver.write(buf);
-//		Message m = conn.getMessage(channel);
-//		m.increaseAmountRead(byteswritten);
-//		conn.handleFilters(m);
 		hasRemaining = buf.hasRemaining(); // Buffer completely written?
 		System.out.println("\n[WRITE] " + byteswritten + " to "
 				+ receiver.socket().getInetAddress() + ":"
