@@ -62,7 +62,7 @@ public class ProxyConnection {
 			System.out.println(e);
 		}
 
-		if (message != null && message.isFinished()) {
+		if (message != null && !message.hasHeadersBuffered() && message.isFinished()) {
 			resetIncompleteMessage();
 			return message;
 		} else
@@ -160,6 +160,10 @@ public class ProxyConnection {
 
 	public void setClientbuf(ByteBuffer clientbuf) {
 		this.clientbuf = clientbuf;
+	}
+	
+	public Message getIncompleteMessage() {
+		return this.incompleteMessage;
 	}
 
 	public void resetIncompleteMessage() {

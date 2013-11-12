@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.Message;
+import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class HttpSelectorProtocolClient implements TCPProtocol {
 
@@ -44,7 +45,6 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		System.out.println("\n[READ] " + bytesRead + " from "
 				+ channel.socket().getInetAddress() + ":"
 				+ channel.socket().getPort());
-		// conn.setBytesRead(bytesRead);
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {
 				System.out.println("\n[RECEIVED CLOSE] from cliente "
@@ -67,7 +67,6 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				
 				channel.close();
 				
-				/* ----------------- CLOSE ----------------- */
 				System.out.println("\n[SENT CLOSE] to cliente "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
@@ -77,11 +76,8 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				proxyconnections.remove(channel);
 				proxyconnections.remove(conn.getServer());
 				
-				/* ----------------- REMOVE ----------------- */
-				
 				/* ----------------- CANCEL ----------------- */
 				key.cancel();
-				/* ----------------- CANCEL ----------------- */
 				
 				
 				// de-reference the proxy connection as it is
@@ -114,13 +110,18 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			}
 
 		} else if (bytesRead > 0) {
-			// Indicate via key that reading/writing are both of interest now.
+			
+			/* ----------- PARSEO DE REQ/RESP ----------- */
+			
 			Message message = conn.getMessage(channel);
 			message.increaseAmountRead((int) bytesRead); // DECIDIR SI INT O
 			message.setFrom("client" + channel.socket().getInetAddress()); // LONG
 
 			/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
 			SocketChannel serverchannel;
+			if (conn.isClient(channel) && message.getState() != ParsingState.Body) {
+				return null;
+			}
 			if ((serverchannel = conn.getServer()) == null) {
 				String url = null;
 				if (((HttpRequest) message).getURI().startsWith("/"))
@@ -145,6 +146,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 	//					 8888))) {
 						while (!serverchannel.finishConnect()) {
 							Thread.sleep(30); // avoid massive polling
+							System.out.println("*");
 						}
 					}
 				} catch (UnresolvedAddressException e) { //TODO HACERLO DE LA FORMA BIEN. AGARRANDOLO DE UN ARCHIVO
@@ -159,11 +161,12 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				// serverchannel.register(key.selector(),
-				// SelectionKey.OP_WRITE);
 				conn.setServer(serverchannel);
 				proxyconnections.put(serverchannel, conn);
 			}
+			
+			// Indicate via key that reading/writing are both of interest now.
+			
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			channel.register(key.selector(), SelectionKey.OP_WRITE);
 			if (message.isFinished()) {
@@ -176,38 +179,29 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 	}
 
 	public void handleWrite(SelectionKey key) throws IOException {
-		/*
-		 * Channel is available for writing, and key is valid (i.e., client
-		 * channel not closed).
-		 */
 
-		// Retrieve data read earlier
 		SocketChannel channel = (SocketChannel) key.channel();
-
-		/* ----------- PARSEO DE REQ/RESP ----------- */
 		ProxyConnection conn = proxyconnections.get(channel);
-
 		SocketChannel receiver = conn.getOppositeChannel(channel);
 		ByteBuffer buf = conn.getBuffer(channel);
-
+		Message message = conn.getIncompleteMessage();
+		ByteBuffer pHeadersBuf;
 		int byteswritten = 0;
-		boolean hasRemaining = true;
+		
+		if (message != null && (pHeadersBuf = message.getPartialHeadersBuffer()) != null) { // Headers came in different reads. 
+			pHeadersBuf.flip();
+			receiver.write(pHeadersBuf);
+			message.finishWithLeftHeaders();
+		}
+		
 		byteswritten = receiver.write(buf);
-		hasRemaining = buf.hasRemaining(); // Buffer completely written?
 		System.out.println("\n[WRITE] " + byteswritten + " to "
 				+ receiver.socket().getInetAddress() + ":"
 				+ receiver.socket().getPort());
 
 		buf.compact(); // Make room for more data to be read in
-		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver
-		key.interestOps(SelectionKey.OP_READ); // Sender has finished
-												// writing
+		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver will write us back
+		key.interestOps(SelectionKey.OP_READ); // Sender has finished writing
 
 	}
-
 }
-
-// System.out.println("URI: " + httpheaders.getURI());
-// System.out.println("Version: " + httpheaders.getVersion());
-// System.out.println("Method: " + httpheaders.getHttpmethod());
-// System.out.println("Extra headers:" + httpheaders.getHeaders());

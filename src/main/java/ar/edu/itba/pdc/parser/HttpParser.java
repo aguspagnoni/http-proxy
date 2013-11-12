@@ -24,6 +24,8 @@ public class HttpParser {
 			
 			switch (message.state) {
 			case Head:
+				
+//				message.increaseHeadersLength(readBuffer.remaining());
 				while ((b = readBuffer.get()) != '\n' && readBuffer.hasRemaining())
 					auxBuf[i++] = b;
 	
@@ -35,14 +37,27 @@ public class HttpParser {
 					return null; // empty message
 				message.fillHead();
 				message.state = ParsingState.Header;
-				break;
-			case Header:
 				
+				if (!readBuffer.hasRemaining()) {
+					readBuffer.rewind();
+					message.saveInBuffer(readBuffer);
+					readBuffer.compact();
+					return message;
+				}
+//				break;
+			case Header:
 				message.increaseHeadersLength(readBuffer.remaining()); //  check if this is done correctly
 				do {
 					i = 0;
-					while (readBuffer.hasRemaining() && (b = readBuffer.get()) != '\n')
-						auxBuf[i++] = b;
+					while (readBuffer.hasRemaining()) {
+						if ((b = readBuffer.get()) != '\n')
+							auxBuf[i++] = b;
+						else {
+							if (i == 0 || i == 1)  // case \r\n => 1 and \n => 0
+								message.state = ParsingState.Body;
+							break;
+						}
+					}
 					
 					if (i > 1) { // last case
 						if (auxBuf[i-1] == '\r')
@@ -52,8 +67,13 @@ public class HttpParser {
 					}
 					
 				} while (i > 1); // if is 1 it reached \r\n line
-				message.state = ParsingState.Body;
-				break;
+				if (message.state != ParsingState.Body) {
+					readBuffer.rewind();
+					message.saveInBuffer(readBuffer);
+					readBuffer.compact();
+					return message;
+				}
+//				break;
 			case Body:
 					// filter.transform()
 	//			boolean transformationOn = filter.applyTransformation && message.headers.get("content-type").contains("text/plain");

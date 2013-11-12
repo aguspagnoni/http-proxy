@@ -1,5 +1,6 @@
 package ar.edu.itba.pdc.parser;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public abstract class Message {
 	protected String firstLine = "";
 	protected ParsingState state = ParsingState.Head;
 	protected String from;
+	protected ByteBuffer partialHeaders = null; 
 
 	protected void addHeader(String line) {
 		String[] kv = line.split(":");
@@ -64,6 +66,28 @@ public abstract class Message {
 
 	public void setFrom(String from) {
 		this.from = from;
+	}
+	
+	public ParsingState getState() {
+		return this.state;
+	}
+	
+	public void saveInBuffer(ByteBuffer buf) {
+		if (this.partialHeaders == null)
+			 this.partialHeaders = ByteBuffer.allocate(8192);
+		this.partialHeaders.put(buf);
+	}
+	
+	public ByteBuffer getPartialHeadersBuffer() {
+		return this.partialHeaders;
+	}
+	
+	public boolean hasHeadersBuffered() {
+		return this.partialHeaders != null;
+	}
+	
+	public void finishWithLeftHeaders() {
+		this.partialHeaders = null;
 	}
 
 }
