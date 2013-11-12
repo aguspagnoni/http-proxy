@@ -37,33 +37,36 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 		int bytesRead = s.read(channelBuffers.getBuffer(BufferType.read));
 		try {
 			PDCResponse response;
-			if ((response = (PDCResponse) parser
-					.parse(channelBuffers.getBuffer(BufferType.read),
-							channelBuffers.getRequest())) != null) {
-				String resp=response.getVersion() +" "+Integer.toString(response.getCode()) + " "+response.getVerboseCode()+'\n';
+			if ((response = (PDCResponse) parser.parse(
+					channelBuffers.getBuffer(BufferType.read),
+					channelBuffers.getRequest())) != null) {
+				String resp = response.getVersion() + " "
+						+ Integer.toString(response.getCode()) + " "
+						+ response.getVerboseCode() + '\n' + response.getBody()
+						+ '\n';
+
 				s.write(ByteBuffer.wrap(resp.getBytes()));
 				s.write(ByteBuffer.wrap(response.getData().getBytes()));
-//				if (logged || response.equals("PASSWORD OK\n")) {
-//					if (logged && response.equals("PASSWORD OK\n")) {
-//						response = null;
-//						// response = "ALREADY LOGGED\n";
-//					}
-//
-//					logged = true;
-//					s.write(ByteBuffer.wrap(response.getBytes()));
-//				} else if (response.equals("INVALID PASSWORD\n")) {
-//					if (logged) {
-//						response = null;
-//						// response = "ALREADY LOGGED\n";
-//					}
-//					s.write(ByteBuffer.wrap(response.getBytes()));
-//				} else {
-//					s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
-//				}
+				// if (logged || response.equals("PASSWORD OK\n")) {
+				// if (logged && response.equals("PASSWORD OK\n")) {
+				// response = null;
+				// // response = "ALREADY LOGGED\n";
+				// }
+				//
+				// logged = true;
+				// s.write(ByteBuffer.wrap(response.getBytes()));
+				// } else if (response.equals("INVALID PASSWORD\n")) {
+				// if (logged) {
+				// response = null;
+				// // response = "ALREADY LOGGED\n";
+				// }
+				// s.write(ByteBuffer.wrap(response.getBytes()));
+				// } else {
+				// s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
+				// }
 			}
 		} catch (BadSyntaxException e) {
 			logger.info("Bad syntax");
-
 			s.write(ByteBuffer.wrap("BAD SYNTAX\n".getBytes()));
 		} catch (Exception e) {
 			logged = false;

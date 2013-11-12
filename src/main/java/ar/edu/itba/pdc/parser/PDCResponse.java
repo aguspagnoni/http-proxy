@@ -3,15 +3,16 @@ package ar.edu.itba.pdc.parser;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PDCResponse extends Message{
+public class PDCResponse extends Message {
 
-	protected Map<Integer,String> codeMapping=new HashMap<Integer, String>();
+	protected Map<Integer, String> codeMapping = new HashMap<Integer, String>();
 	protected int code; // e.g. 400, 404
 	protected String version; // e.g. PDC/1.0
 	protected String verboseCode; // e.g. Moved Temporarily, Bad Request
 	protected String data;
-	
-	public PDCResponse(){
+	protected String body;
+
+	public PDCResponse() {
 		codeMapping.put(200, "OK");
 		codeMapping.put(204, "NO CONTENT");
 		codeMapping.put(400, "BAD REQUEST");
@@ -23,56 +24,67 @@ public class PDCResponse extends Message{
 		codeMapping.put(501, "NOT IMPLEMENTED");
 		codeMapping.put(503, "SERVICE UNAVAILABLE");
 	}
-	
-	public PDCResponse(int code, String version){
+
+	public PDCResponse(int code, String version) {
 		this();
-		this.code=code;
-		this.version=version;
-		this.verboseCode=codeMapping.get(code);
+		this.code = code;
+		this.version = version;
+		this.verboseCode = codeMapping.get(code);
+		this.body = "";
 	}
-	
-	public String getVerboseCode(){
+
+	public PDCResponse(int code, String version, String body) {
+		this(code, version);
+		this.body = body;
+	}
+
+	public String getVerboseCode() {
 		return this.verboseCode;
 	}
-	
-	public int getCode(){
+
+	public int getCode() {
 		return this.code;
 	}
-	
-	public String getVersion(){
+
+	public String getVersion() {
 		return this.version;
 	}
-	
-	public String getData(){
+
+	public String getData() {
+		if (this.data == null)
+			return "no data" + '\n';
 		return this.data;
 	}
-	
-	public void appendData(String data){
-		if(this.data==null){
-			this.data=data;
-		}
-		else{
-			this.data=this.data+'\n'+data;
+
+	public void appendData(String data) {
+		if (this.data == null) {
+			this.data = data;
+		} else {
+			this.data = this.data + '\n' + data;
 		}
 	}
 
-	//no deberia usarse
+	// no deberia usarse
 	@Override
 	public boolean isFinished() {
-		
+
 		return false;
 	}
 
-	//no deberia usarse
+	// no deberia usarse
 	@Override
 	public void fillHead() {
 		return;
-		
+
 	}
 
 	public byte[] getBytes() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public String getBody() {
+		return this.body;
 	}
 
 }
