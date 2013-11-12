@@ -169,9 +169,6 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			channel.register(key.selector(), SelectionKey.OP_WRITE);
-			if (message.isFinished()) {
-				System.out.println("finisheo");
-			}
 			return serverchannel;
 		}
 
