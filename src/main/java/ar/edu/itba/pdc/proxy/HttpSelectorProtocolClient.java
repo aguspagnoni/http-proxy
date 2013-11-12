@@ -48,21 +48,23 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		logger.info("\n[READ] " + bytesRead + " from "
 				+ channel.socket().getInetAddress() + ":"
 				+ channel.socket().getPort());
+		SocketChannel server = conn.getServer();
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {
 				logger.info("\n[SENT CLOSE] cliente "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
-				if (conn.getServer() != null) {
+				if (server != null) {
 					
 					/* ----------------- CLOSE ----------------- */
 					
-					conn.getServer().close(); // close the server channel
+					server.register(key.selector(), 0); // un-register this now closed channel so as to avoid unhandled reads.
+					server.close(); // close the server channel
 					
 					/* ----------------- CLOSE ----------------- */
 					System.out.println("\n[SENT CLOSE] to servidor remoto "
-							+ conn.getServer().socket().getInetAddress() + ":"
-							+ conn.getServer().socket().getPort());
+							+ server.socket().getInetAddress() + ":"
+							+ server.socket().getPort());
 				}
 				
 				
@@ -77,7 +79,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				/* ----------------- REMOVE ----------------- */
 				
 				proxyconnections.remove(channel);
-				proxyconnections.remove(conn.getServer());
+				proxyconnections.remove(server);
 				
 				/* ----------------- CANCEL ----------------- */
 				key.cancel();
@@ -94,22 +96,22 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				
 				/* ----------------- CLOSE ----------------- */
 				
-				conn.getServer().close();
-				
+				server.register(key.selector(), 0); // un-register this now closed channel so as to avoid unhandled reads.
+				server.close();
 				/* ----------------- CLOSE ----------------- */
 				
 				
 //				channel.close();
 				
 				System.out.println("\n[SENT CLOSE] to servidor remoto "
-						+ conn.getServer().socket().getInetAddress() + ":"
-						+ conn.getServer().socket().getPort());
+						+ server.socket().getInetAddress() + ":"
+						+ server.socket().getPort());
 				// proxyconnections.remove(channel);
 //				key.cancel();
 //				channel.write(buf.rewind());
 				conn.resetIncompleteMessage();
 //				proxyconnections.remove(channel);
-				proxyconnections.remove(conn.getServer());
+				proxyconnections.remove(server);
 				conn.resetServer();
 			}
 
@@ -126,7 +128,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			if (conn.isClient(channel) && message.getState() != ParsingState.Body) {
 				return null;
 			}
-			if ((serverchannel = conn.getServer()) == null) {
+			if ((serverchannel = server) == null) {
 				String url = null;
 				if (((HttpRequest) message).getURI().startsWith("/"))
 					url = ((HttpRequest) message).getHeaders().get("host")
