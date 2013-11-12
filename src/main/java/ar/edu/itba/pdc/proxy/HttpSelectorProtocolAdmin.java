@@ -3,22 +3,25 @@ package ar.edu.itba.pdc.proxy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
 
 import ar.edu.itba.pdc.exceptions.BadSyntaxException;
-import ar.edu.itba.pdc.parser.StupidAdminParser;
+import ar.edu.itba.pdc.logger.HTTPProxyLogger;
+import ar.edu.itba.pdc.parser.AdminParser;
+import ar.edu.itba.pdc.parser.PDCRequest;
+import ar.edu.itba.pdc.parser.PDCResponse;
 
 public class HttpSelectorProtocolAdmin implements TCPProtocol {
 
 	private Map<SocketChannel, ChannelBuffers> list = new HashMap<SocketChannel, ChannelBuffers>();
 	private boolean logged = false;
-	private StupidAdminParser parser;
+	private AdminParser parser;
+	private HTTPProxyLogger logger = HTTPProxyLogger.getInstance();
 
 	public HttpSelectorProtocolAdmin(int bufSize) {
-		parser = new StupidAdminParser();
+		parser = new AdminParser();
 
 	}
 
@@ -33,24 +36,37 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 		ChannelBuffers channelBuffers = list.get(s);
 		int bytesRead = s.read(channelBuffers.getBuffer(BufferType.read));
 		try {
-			String response;
-			if ((response = parser.parseCommand(
-					channelBuffers.getBuffer(BufferType.read), bytesRead)) != null) {
-				if (logged || response.equals("PASSWORD OK\n")) {
-					if (logged && response.equals("PASSWORD OK\n"))
-						response = "ALREADY LOGGED\n";
-					logged = true;
-					s.write(ByteBuffer.wrap(response.getBytes()));
-				} else if (response.equals("INVALID PASSWORD\n")) {
-					if (logged)
-						response = "ALREADY LOGGED\n";
-					s.write(ByteBuffer.wrap(response.getBytes()));
-				} else {
-					s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
-				}
+			PDCResponse response;
+			if ((response = (PDCResponse) parser.parse(
+					channelBuffers.getBuffer(BufferType.read),
+					channelBuffers.getRequest())) != null) {
+				String resp = response.getVersion() + " "
+						+ Integer.toString(response.getCode()) + " "
+						+ response.getVerboseCode() + '\n' + response.getBody()
+						+ '\n';
+
+				s.write(ByteBuffer.wrap(resp.getBytes()));
+				s.write(ByteBuffer.wrap(response.getData().getBytes()));
+				// if (logged || response.equals("PASSWORD OK\n")) {
+				// if (logged && response.equals("PASSWORD OK\n")) {
+				// response = null;
+				// // response = "ALREADY LOGGED\n";
+				// }
+				//
+				// logged = true;
+				// s.write(ByteBuffer.wrap(response.getBytes()));
+				// } else if (response.equals("INVALID PASSWORD\n")) {
+				// if (logged) {
+				// response = null;
+				// // response = "ALREADY LOGGED\n";
+				// }
+				// s.write(ByteBuffer.wrap(response.getBytes()));
+				// } else {
+				// s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
+				// }
 			}
 		} catch (BadSyntaxException e) {
-			System.out.println("Bad syntax");
+			logger.info("Bad syntax");
 			s.write(ByteBuffer.wrap("BAD SYNTAX\n".getBytes()));
 		} catch (Exception e) {
 			logged = false;

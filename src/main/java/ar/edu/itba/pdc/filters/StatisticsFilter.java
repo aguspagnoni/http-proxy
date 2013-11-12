@@ -21,7 +21,7 @@ public class StatisticsFilter implements Filter {
 	private long initialStatisticsTime = -1;
 
 	private Map<String, PersonalStatistic> usersStatistics = null;
-
+	private Map<Integer,Integer> statusCode=null;
 	public static StatisticsFilter getInstance() {
 		if (instance == null)
 			instance = new StatisticsFilter();
@@ -31,12 +31,72 @@ public class StatisticsFilter implements Filter {
 	private StatisticsFilter() {
 		if (usersStatistics == null) {
 			usersStatistics = new HashMap<String, PersonalStatistic>();
+			statusCode=new HashMap<Integer, Integer>();
 			initialStatisticsTime = System.currentTimeMillis();
 			// setInterval(StupidAdminParser.getInterval()); // desde el archivo
 			// conf
 		}
 	}
 
+	public int getAccesses(){
+		int currInterval = getCurrentInterval() + 1;
+		int globalTotalAccesses = 0;
+		int[] globalAccessByInterval = new int[currInterval];
+
+		for (PersonalStatistic ps : usersStatistics.values()) {
+			int userTotalAccesses = 0;
+			int[] userAccessByInterval = new int[currInterval];
+
+			for (Entry<Integer, Integer> access : ps.accessBetweenIntervals
+					.entrySet()) {
+				globalAccessByInterval[access.getKey()] += access.getValue();
+				userAccessByInterval[access.getKey()] += access.getValue();
+				userTotalAccesses += access.getValue();
+			}
+			globalTotalAccesses += userTotalAccesses;
+		}
+		
+		return globalTotalAccesses;
+	}
+	
+	public int gettxBytes(){
+		int currInterval = getCurrentInterval() + 1;
+		int globalTotalByteTransfers = 0;
+		int[] byteTransferByInterval = new int[currInterval];
+		
+		for (PersonalStatistic ps : usersStatistics.values()) {
+			int userTotalBytesTransfered = 0;
+			int[] userByteTransferByInterval = new int[currInterval];
+
+			for (Entry<Integer, Integer> bytesTransfered : ps.bytesBetweenIntervals
+					.entrySet()) {
+				byteTransferByInterval[bytesTransfered.getKey()] += bytesTransfered
+						.getValue();
+				userByteTransferByInterval[bytesTransfered.getKey()] += bytesTransfered
+						.getValue();
+				userTotalBytesTransfered += bytesTransfered.getValue();
+			}
+			globalTotalByteTransfers += userTotalBytesTransfered;
+		}
+		
+		return globalTotalByteTransfers;
+	}
+	
+	public Map<Integer,Integer> getHistogram(){
+		return this.statusCode;
+	}
+	
+	public void addStatusCodeCounter(int statusCode){
+		if(this.statusCode.containsKey(statusCode)){
+			int quantity=this.statusCode.get(statusCode);
+			quantity++;
+			this.statusCode.put(statusCode, quantity);
+		}
+		else{
+			this.statusCode.put(statusCode, 1);
+		}
+	}
+	
 	public String execute() {
 		int currInterval = getCurrentInterval() + 1;
 		int globalTotalAccesses = 0, globalTotalByteTransfers = 0;

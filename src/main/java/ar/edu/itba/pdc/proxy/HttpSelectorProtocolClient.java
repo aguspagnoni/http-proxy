@@ -9,6 +9,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.HashMap;
 
+import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.Message;
 import ar.edu.itba.pdc.parser.enumerations.ParsingState;
@@ -16,7 +17,8 @@ import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 public class HttpSelectorProtocolClient implements TCPProtocol {
 
 	private HashMap<SocketChannel, ProxyConnection> proxyconnections = new HashMap<SocketChannel, ProxyConnection>();
-
+	private HTTPProxyLogger logger= HTTPProxyLogger.getInstance();
+	
 	public HttpSelectorProtocolClient(int bufSize) {
 	}
 
@@ -42,12 +44,13 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			e.printStackTrace();
 			return null;
 		}
-		System.out.println("\n[READ] " + bytesRead + " from "
+		
+		logger.info("\n[READ] " + bytesRead + " from "
 				+ channel.socket().getInetAddress() + ":"
 				+ channel.socket().getPort());
 		if (bytesRead == -1) { // Did the other end close?
 			if (conn.isClient(channel)) {
-				System.out.println("\n[RECEIVED CLOSE] from cliente "
+				logger.info("\n[SENT CLOSE] cliente "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
 				if (conn.getServer() != null) {
@@ -84,7 +87,8 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 									// no longer useful
 				return null;
 			} else {
-				System.out.println("\n[RECEIVED CLOSE] from servidor remoto "
+				
+				logger.info("\n[SENT CLOSE] servidor remoto "
 						+ channel.socket().getInetAddress() + ":"
 						+ channel.socket().getPort());
 				
@@ -192,9 +196,11 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		}
 		
 		byteswritten = receiver.write(buf);
-		System.out.println("\n[WRITE] " + byteswritten + " to "
+//		conn.handleFilters(m);
+		logger.info("\n[WRITE] " + byteswritten + " to "
 				+ receiver.socket().getInetAddress() + ":"
 				+ receiver.socket().getPort());
+
 
 		buf.compact(); // Make room for more data to be read in
 		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver will write us back

@@ -34,7 +34,7 @@ public class HttpProxyData {
 																				// este
 																				// caso
 
-	public HttpProxyData getInstance() {
+	public static HttpProxyData getInstance() {
 		if (instance == null) {
 			instance = new HttpProxyData();
 		}

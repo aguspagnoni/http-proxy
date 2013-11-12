@@ -12,12 +12,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import ar.edu.itba.pdc.configuration.PortConfiguration;
+import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 
 public class HttpServerSelector {
 	private static final int BUFSIZE = 256; // Buffer size (bytes)
 	private static final int TIMEOUT = 3000; // Wait timeout (milliseconds)
 	private Map<AbstractSelectableChannel, TCPProtocol> handlerMap = new HashMap<AbstractSelectableChannel, TCPProtocol>();
-
+	private HTTPProxyLogger logger= HTTPProxyLogger.getInstance();
+	
 	public void run() throws IOException {
 
 		/* Create handlers */
@@ -62,9 +64,10 @@ public class HttpServerSelector {
 					TCPProtocol handler = handlerMap.get(key.channel());
 					handlerMap.put(newChannel, handler);
 					handler.handleAccept(newChannel);
-					System.out.println("\n[ACCEPT] cliente "
+					logger.info("\n[ACCEPT] cliente "
 							+ newChannel.socket().getInetAddress() + ":"
 							+ newChannel.socket().getPort());
+
 
 					// protocol.handleAccept(key);
 				}
