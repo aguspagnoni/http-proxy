@@ -43,6 +43,7 @@ public class AdminParser implements AdministratorParser {
 		if (message == null)
 			throw new InvalidMessageException();
 		byte[] auxBuf = ByteBuffer.allocate(8192).array();
+		// if (readBuffer.position() == 0)
 		readBuffer.flip();
 
 		byte b;
@@ -91,11 +92,11 @@ public class AdminParser implements AdministratorParser {
 						// mensaje se termino.
 				// readBuffer.put(readBuffer.arrayOffset() + i, b);
 				// }
-				if(message.isFinished()){
-					message.state=ParsingState.Complete;
+				if (message.isFinished()) {
+					message.state = ParsingState.Complete;
 					break;
 				}
-				readBuffer.rewind();
+				readBuffer.compact();
 				return null;
 			case Complete:
 				PDCResponse response = message.parseMessage(readBuffer, i); // aca
@@ -113,6 +114,7 @@ public class AdminParser implements AdministratorParser {
 																			// los
 																			// comandos
 				readBuffer.rewind();
+				readBuffer.clear();
 				return response;
 			}
 		}

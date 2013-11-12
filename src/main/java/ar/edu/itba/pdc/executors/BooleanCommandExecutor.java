@@ -27,7 +27,7 @@ public class BooleanCommandExecutor extends AbstractCommandExecutor {
 		}
 		// getLogger().info("Set property " + command + " with value " + value);
 		commandManager.setProperty(command, value);
-		return null;
+		return new PDCResponse(200, "PDC/1.0", "Transformations " + valueLower);
 		// return "OK";
 	}
 }
