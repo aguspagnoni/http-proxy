@@ -127,10 +127,11 @@ public class NewStatisticsFilter implements Filter {
 			if (m.getClass().equals(HttpResponse.class)) {
 				int statuscode;
 				statuscode = ((HttpResponse) m).getCode();
-				this.addStatusCodeCounter(statuscode);
-				this.access();
-				this.incTxBytes(m.getAmountRead());
-
+				if (statuscode != 0) {
+					this.addStatusCodeCounter(statuscode);
+					this.access();
+					this.incTxBytes(m.getAmountRead());
+				}
 			}
 			if (m.getClass().equals(HttpRequest.class)) {
 				this.access();
