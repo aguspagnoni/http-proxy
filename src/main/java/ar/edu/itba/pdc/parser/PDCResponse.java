@@ -64,14 +64,11 @@ public class PDCResponse extends Message {
 		}
 	}
 
-	// no deberia usarse
 	@Override
 	public boolean isFinished() {
-
 		return false;
 	}
 
-	// no deberia usarse
 	@Override
 	public void fillHead() {
 		return;
@@ -79,8 +76,7 @@ public class PDCResponse extends Message {
 	}
 
 	public byte[] getBytes() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.body.getBytes();
 	}
 
 	public String getBody() {

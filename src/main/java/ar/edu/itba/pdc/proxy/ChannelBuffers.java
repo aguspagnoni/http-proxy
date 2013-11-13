@@ -55,6 +55,11 @@ public class ChannelBuffers {
 		return this.req;
 	}
 	
+	/**
+	 * Sets the PDCRequest asociated to that channelBuffers
+	 * 
+	 * @return
+	 */
 	public void setRequest(PDCRequest req) {
 		this.req = req;
 	}

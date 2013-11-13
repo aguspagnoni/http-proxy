@@ -70,7 +70,7 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("accesses", acces);
 			resp.appendData("txbytes", txbytes);
-			// resp.appendData("txkbytes", s);
+			// resp.appendData("txkbytes", s); //IF YOU WANT IT IN KBytes
 			resp.appendData("histogram", hist);
 			return resp;
 		}

@@ -37,7 +37,7 @@ public class AuthService extends AbstractCommandExecutor {
 	 * Validates if username and password are correct.
 	 */
 	public PDCResponse execute(String username, String password) {
-		username = "user"; // Future Extension
+		username = "user"; // Future Extension. For now. Only one user.
 		return (checkAuth(username, password)) ? null : new PDCResponse(200,
 				"PDC/1.0", "Wrong Auth ");
 	}

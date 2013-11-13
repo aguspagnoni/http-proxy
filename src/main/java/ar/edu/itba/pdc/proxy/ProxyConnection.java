@@ -16,7 +16,7 @@ import ar.edu.itba.pdc.parser.Message;
 
 public class ProxyConnection {
 
-	private int bufSize = 8192; // Size of I/O buffer
+	private int bufSize = 8192; // Size of I/O buffer 8K
 	private SocketChannel server;
 	private SocketChannel client;
 
