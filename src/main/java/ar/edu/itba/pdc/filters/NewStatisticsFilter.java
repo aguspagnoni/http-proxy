@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
+import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.HttpResponse;
 import ar.edu.itba.pdc.parser.Message;
 
@@ -167,6 +168,10 @@ public class NewStatisticsFilter implements Filter{
 				this.access();
 				this.incTxBytes(m.getAmountRead());
 				
+			}
+			if(m.getClass().equals(HttpRequest.class)){
+				this.access();
+				this.incTxBytes(m.getAmountRead());
 			}
 
 			return true; 

@@ -26,31 +26,42 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 	public PDCResponse execute(String command, String value) {
 		commandManager.saveFile();
 		String ans = null;
-		
+
 		if (value.equals("accesses")) {
-				ans=Integer.toString(NewStatisticsFilter.getInstance().getAccesses());
-			
-		} else if(value.equals("txbytes")){
-			ans=Integer.toString(NewStatisticsFilter.getInstance().gettxBytes());
-		}
-		else if(value.equals("histogram")){
-			Map<Integer,Integer> hist=NewStatisticsFilter.getInstance().getHistogram();
-			ans="";
-			for(Entry<Integer, Integer> pairs:hist.entrySet()){
-				ans=ans+pairs.getKey()+":"+pairs.getValue()+'\n';
-			}
-		}
-		else if(value.equals("statisticsjson")){
-			int acces=NewStatisticsFilter.getInstance().getAccesses();
-			int txbytes=NewStatisticsFilter.getInstance().gettxBytes();
-			Map<Integer,Integer> hist=NewStatisticsFilter.getInstance().getHistogram();
-			PDCResponseJson resp= new PDCResponseJson(200, "PDC/1.0");
+			int acces = NewStatisticsFilter.getInstance().getAccesses();
+			// ans=Integer.toString(NewStatisticsFilter.getInstance().getAccesses());
+			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("accesses", acces);
-			resp.appendData("txbytes",txbytes);
+			return resp;
+		} else if (value.equals("txbytes")) {
+			ans = Integer.toString(NewStatisticsFilter.getInstance()
+					.gettxBytes());
+			int txbytes = NewStatisticsFilter.getInstance().gettxBytes();
+			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
+			resp.appendData("txbytes", txbytes);
+			return resp;
+		} else if (value.equals("histogram")) {
+			Map<Integer, Integer> hist = NewStatisticsFilter.getInstance()
+					.getHistogram();
+			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
+			resp.appendData("histogram", hist);
+			return resp;
+//			ans = "";
+//			for (Entry<Integer, Integer> pairs : hist.entrySet()) {
+//				ans = ans + pairs.getKey() + ":" + pairs.getValue() + '\n';
+//			}
+		} else if (value.equals("statisticsjson")) {
+			int acces = NewStatisticsFilter.getInstance().getAccesses();
+			int txbytes = NewStatisticsFilter.getInstance().gettxBytes();
+			Map<Integer, Integer> hist = NewStatisticsFilter.getInstance()
+					.getHistogram();
+			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
+			resp.appendData("accesses", acces);
+			resp.appendData("txbytes", txbytes);
 			resp.appendData("histogram", hist);
 			return resp;
 		}
-		PDCResponse resp= new PDCResponse(200, "PDC/1.0");
+		PDCResponse resp = new PDCResponse(200, "PDC/1.0");
 		resp.appendData(ans);
 		return resp;
 	}
