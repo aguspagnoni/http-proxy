@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.json.JSONObject;
+
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.HttpResponse;
@@ -25,7 +27,7 @@ public class NewStatisticsFilter implements Filter{
 
 	private int accesses = 0;
 	private int txbytes = 0;
-	private Map<Integer, Integer> statusCode = null;
+	private Map<Integer, IntervalStatusCode> statusCode = null;
 
 	public static NewStatisticsFilter getInstance() {
 		if (instance == null)
@@ -35,7 +37,7 @@ public class NewStatisticsFilter implements Filter{
 
 	private NewStatisticsFilter() {
 		if (statusCode == null) {
-			statusCode = new HashMap<Integer, Integer>();
+			statusCode = new HashMap<Integer, IntervalStatusCode>();
 			initialStatisticsTime = System.currentTimeMillis();
 			// setInterval(StupidAdminParser.getInterval()); // desde el archivo
 			// conf
@@ -50,7 +52,7 @@ public class NewStatisticsFilter implements Filter{
 		return this.txbytes;
 	}
 
-	public Map<Integer, Integer> getHistogram() {
+	public Map<Integer, IntervalStatusCode> getHistogram() {
 		return this.statusCode;
 	}
 	
@@ -64,11 +66,15 @@ public class NewStatisticsFilter implements Filter{
 
 	public void addStatusCodeCounter(int statusCode) {
 		if (this.statusCode.containsKey(statusCode)) {
-			int quantity = this.statusCode.get(statusCode);
-			quantity++;
-			this.statusCode.put(statusCode, quantity);
+			
+			IntervalStatusCode isc = this.statusCode.get(statusCode);
+			isc.putstatusCode((int)(System.currentTimeMillis()-initialStatisticsTime)/interval);
+			this.statusCode.put(statusCode, isc);
+			
 		} else {
-			this.statusCode.put(statusCode, 1);
+			IntervalStatusCode isc=new IntervalStatusCode();
+			this.statusCode.put(statusCode, isc);
+			
 		}
 	}
 	
@@ -179,6 +185,25 @@ public class NewStatisticsFilter implements Filter{
 		}
 		return false;
 
+	}
+	
+	public static class IntervalStatusCode{
+		Map<Integer,Integer> statuscodeMapping= new HashMap<Integer, Integer>();
+		
+		public void putstatusCode(int intervalNumber){
+			Integer qty=statuscodeMapping.get(intervalNumber);
+			if(qty!=null){
+				qty++;
+			}
+			else{
+				qty=1;				
+			}
+			statuscodeMapping.put(intervalNumber, qty);
+		}
+		
+		public JSONObject toJSONObject(){
+			return new JSONObject(statuscodeMapping);
+		}
 	}
 
 }

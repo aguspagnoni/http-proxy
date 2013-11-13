@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.filters.NewStatisticsFilter;
+import ar.edu.itba.pdc.filters.NewStatisticsFilter.IntervalStatusCode;
 import ar.edu.itba.pdc.parser.PDCResponse;
 import ar.edu.itba.pdc.parser.PDCResponseJson;
 
@@ -41,7 +42,7 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 			resp.appendData("txbytes", txbytes);
 			return resp;
 		} else if (value.equals("histogram")) {
-			Map<Integer, Integer> hist = NewStatisticsFilter.getInstance()
+			Map<Integer, IntervalStatusCode> hist = NewStatisticsFilter.getInstance()
 					.getHistogram();
 			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("histogram", hist);
@@ -53,7 +54,7 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 		} else if (value.equals("statisticsjson")) {
 			int acces = NewStatisticsFilter.getInstance().getAccesses();
 			int txbytes = NewStatisticsFilter.getInstance().gettxBytes();
-			Map<Integer, Integer> hist = NewStatisticsFilter.getInstance()
+			Map<Integer, IntervalStatusCode> hist = NewStatisticsFilter.getInstance()
 					.getHistogram();
 			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("accesses", acces);
