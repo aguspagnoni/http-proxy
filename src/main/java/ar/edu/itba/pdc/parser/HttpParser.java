@@ -2,6 +2,8 @@ package ar.edu.itba.pdc.parser;
 
 import java.nio.ByteBuffer;
 
+import ar.edu.itba.pdc.filters.Filter;
+import ar.edu.itba.pdc.filters.TransformationFilter;
 import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class HttpParser {
@@ -47,7 +49,7 @@ public class HttpParser {
 				}
 				// break;
 			case Header:
-				message.increaseHeadersLength(readBuffer.remaining()); 
+				message.increaseHeadersLength(readBuffer.remaining());
 				do {
 					i = 0;
 					while (readBuffer.hasRemaining()) {
@@ -74,25 +76,26 @@ public class HttpParser {
 					readBuffer.compact();
 					return message;
 				}
-				// break;
 			case Body:
-				// filter.transform()
-				// boolean transformationOn = filter.applyTransformation &&
-				// message.headers.get("content-type").contains("text/plain");
-				// if (transformationOn) {
-				// ByteBuffer transformedBuffer =
-				// ByteBuffer.allocate(readBuffer.capacity());
-				while (readBuffer.hasRemaining()
-						&& (b = readBuffer.get()) != -1
-						&& !message.isFinished())
-					; // cierre de conexion (-1) es una forma de indicar q el
-						// mensaje se termino.
-					// readBuffer.put(readBuffer.arrayOffset() + i, b);
-					// }
-
+				TransformationFilter tfilter = TransformationFilter
+						.getInstance();
+				if (message.getClass().equals(HttpResponse.class)
+						&& message.headers.get("content-type").contains(
+								"text/plain")
+						&& !message.headers.containsKey("content-encoding")
+						&& tfilter.filter(message)) {
+					while (readBuffer.hasRemaining()
+							&& (b = readBuffer.get()) != -1
+							&& !message.isFinished())
+						readBuffer.put(readBuffer.position() - 1,
+								tfilter.changeByte(b));
+				} else
+					while (readBuffer.hasRemaining()
+							&& (b = readBuffer.get()) != -1
+							&& !message.isFinished())
+						;
 				readBuffer.rewind(); // set the buffer ready to a write action
-				return message; // hasta q no este lo de la transformacion se
-								// mmanda asi como viene
+				return message;
 			}
 		}
 	}

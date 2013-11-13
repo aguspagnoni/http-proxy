@@ -94,4 +94,8 @@ public abstract class Message {
 		this.state = p;
 	}
 
+	public Map<String, String> getHeaders() {
+		return headers;
+	}
+	
 }

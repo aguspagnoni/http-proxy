@@ -10,9 +10,13 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.HashMap;
+import java.util.Map;
 
+import ar.edu.itba.pdc.filters.StatisticsFilter;
+import ar.edu.itba.pdc.filters.TransformationFilter;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.HttpRequest;
+import ar.edu.itba.pdc.parser.HttpResponse;
 import ar.edu.itba.pdc.parser.Message;
 import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
@@ -83,8 +87,8 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				return null;
 			}
 			
-			// Indicate via key that reading/writing are both of interest now.
 			
+			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			if (channel.isOpen())
 				channel.register(key.selector(), SelectionKey.OP_WRITE);

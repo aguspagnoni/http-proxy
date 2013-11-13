@@ -237,7 +237,7 @@ public class StatisticsFilter implements Filter {
 	public boolean filter(Message m) {
 		String s = ConfigurationCommands.getInstance()
 				.getProperty("statistics");
-		if (s != null && s.equals("enabled")) {
+		if (s != null && s.equals("on")) {
 			String clientaddr;
 			clientaddr = m.getFrom(); // TODO DEFINIR
 			if (!usersStatistics.containsKey(clientaddr)) {
