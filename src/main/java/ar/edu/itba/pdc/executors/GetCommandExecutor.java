@@ -1,5 +1,6 @@
 package ar.edu.itba.pdc.executors;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
@@ -33,41 +34,43 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 	 * Returns a message with the response to the command. command=get and value
 	 * is the PARAM in PDC protocol
 	 */
+	@SuppressWarnings("unused")
 	public PDCResponse execute(String command, String value) {
 		commandManager.saveFile();
 		String ans = null;
 
+		NewStatisticsFilter StatisticFilterInstance = NewStatisticsFilter
+				.getInstance();
 		if (value.equals("accesses")) {
-			int acces = NewStatisticsFilter.getInstance().getAccesses();
-			// ans=Integer.toString(NewStatisticsFilter.getInstance().getAccesses());
+			int acces = StatisticFilterInstance.getAccesses();
 			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("accesses", acces);
 			return resp;
 		} else if (value.equals("txbytes")) {
-			ans = Integer.toString(NewStatisticsFilter.getInstance()
-					.gettxBytes());
-			int txbytes = NewStatisticsFilter.getInstance().gettxBytes();
+			ans = Integer.toString(StatisticFilterInstance.gettxBytes());
+			int txbytes = StatisticFilterInstance.gettxBytes();
 			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("txbytes", txbytes);
 			return resp;
 		} else if (value.equals("histogram")) {
-			Map<Integer, IntervalStatusCode> hist = NewStatisticsFilter
-					.getInstance().getHistogram();
+			Map<Integer, IntervalStatusCode> hist = StatisticFilterInstance
+					.getHistogram();
 			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("histogram", hist);
 			return resp;
-			// ans = "";
-			// for (Entry<Integer, Integer> pairs : hist.entrySet()) {
-			// ans = ans + pairs.getKey() + ":" + pairs.getValue() + '\n';
-			// }
+
 		} else if (value.equals("statisticsjson")) {
-			int acces = NewStatisticsFilter.getInstance().getAccesses();
-			int txbytes = NewStatisticsFilter.getInstance().gettxBytes();
-			Map<Integer, IntervalStatusCode> hist = NewStatisticsFilter
-					.getInstance().getHistogram();
+			int acces = StatisticFilterInstance.getAccesses();
+			int txbytes = StatisticFilterInstance.gettxBytes();
+			double txtkbytes = txbytes / 1024.0;
+			DecimalFormat df = new DecimalFormat("#.##");
+			String s = df.format(txtkbytes);
+			Map<Integer, IntervalStatusCode> hist = StatisticFilterInstance
+					.getHistogram();
 			PDCResponseJson resp = new PDCResponseJson(200, "PDC/1.0");
 			resp.appendData("accesses", acces);
 			resp.appendData("txbytes", txbytes);
+			// resp.appendData("txkbytes", s);
 			resp.appendData("histogram", hist);
 			return resp;
 		}
