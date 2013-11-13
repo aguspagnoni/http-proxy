@@ -27,7 +27,7 @@ public class TransformationFilter implements Filter {
 
 	public boolean filter(Message m) {
 		String s = ConfigurationCommands.getInstance().getProperty(
-				"transformation");
+				"filter");
 		if (s != null && s.equals("enabled")) {
 
 			// String body = m.;
