@@ -244,8 +244,8 @@ public class StatisticsFilter implements Filter {
 				int statuscode;
 				statuscode = ((HttpResponse) m).getCode(); // TODO DEFINIR
 				if (!usersStatistics.containsKey(statuscode)) {
-					usersStatistics.put(statuscode, new PersonalStatistic(
-							statuscode));
+//					usersStatistics.put(statuscode, new PersonalStatistic(
+//							statuscode));
 				}
 				usersStatistics.get(statuscode).applyFilter(m);
 

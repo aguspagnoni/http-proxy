@@ -94,7 +94,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 
 			}
 
-			StatisticsFilter.getInstance().filter(message);
+//			StatisticsFilter.getInstance().filter(message);
 
 			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
@@ -155,6 +155,9 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		ProxyConnection conn = proxyconnections.get(channel);
 		SocketChannel receiver = conn.getOppositeChannel(channel);
 		ByteBuffer buf = conn.getBuffer(channel);
+		
+		if (receiver == null || !receiver.isOpen())
+			return;
 
 		Message message = conn.getIncompleteMessage();
 		ByteBuffer pHeadersBuf;
