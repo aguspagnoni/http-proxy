@@ -274,3 +274,9 @@ Bad syntax
 [ACCEPT] cliente /127.0.0.1:57206
 
 [ACCEPT] cliente /127.0.0.1:57210
+
+[ACCEPT] cliente /127.0.0.1:57263
+
+[ACCEPT] cliente /127.0.0.1:57266
+
+[ACCEPT] cliente /127.0.0.1:57341
