@@ -47,12 +47,7 @@ public class HttpParser {
 				}
 				// break;
 			case Header:
-				message.increaseHeadersLength(readBuffer.remaining()); // check
-																		// if
-																		// this
-																		// is
-																		// done
-																		// correctly
+				message.increaseHeadersLength(readBuffer.remaining()); 
 				do {
 					i = 0;
 					while (readBuffer.hasRemaining()) {
