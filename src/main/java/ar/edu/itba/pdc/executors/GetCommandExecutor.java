@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.filters.NewStatisticsFilter;
 import ar.edu.itba.pdc.parser.PDCResponse;
+import ar.edu.itba.pdc.parser.PDCResponseJson;
 
 public class GetCommandExecutor extends AbstractCommandExecutor {
 
@@ -38,6 +39,16 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 			for(Entry<Integer, Integer> pairs:hist.entrySet()){
 				ans=ans+pairs.getKey()+":"+pairs.getValue()+'\n';
 			}
+		}
+		else if(value.equals("statisticsjson")){
+			int acces=NewStatisticsFilter.getInstance().getAccesses();
+			int txbytes=NewStatisticsFilter.getInstance().gettxBytes();
+			Map<Integer,Integer> hist=NewStatisticsFilter.getInstance().getHistogram();
+			PDCResponseJson resp= new PDCResponseJson(200, "PDC/1.0");
+			resp.appendData("accesses", acces);
+			resp.appendData("txbytes",txbytes);
+			resp.appendData("histogram", hist);
+			return resp;
 		}
 		PDCResponse resp= new PDCResponse(200, "PDC/1.0");
 		resp.appendData(ans);
