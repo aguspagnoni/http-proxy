@@ -31,19 +31,16 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		ProxyConnection conn = new ProxyConnection();
 		conn.setClient(channel);
 		proxyconnections.put(channel, conn);
-
 	}
 
 	public SocketChannel handleRead(SelectionKey key) throws IOException {
-		// Client socket channel has pending data
 		SocketChannel channel = (SocketChannel) key.channel();
 		ProxyConnection conn = proxyconnections.get(channel);
-
 		ByteBuffer buf = conn.getBuffer(channel);
 		long bytesRead = 0;
+
 		try {
 			bytesRead = channel.read(buf);
-			// System.out.println(new String(buf.array(), 0, 100));
 		} catch (IOException e) {
 			System.out.println("\nfallo el read");
 			e.printStackTrace();
@@ -86,18 +83,12 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			try {
 				serverchannel = connectToRemoteServer(conn, message,
 						serverchannel);
-			} catch (UnresolvedAddressException e) { // TODO HACERLO DE LA FORMA
-														// BIEN. AGARRANDOLO DE
-														// UN ARCHIVO
+			} catch (UnresolvedAddressException e) {
 				String notFound = "HTTP/1.1 404 BAD REQUEST\r\n\r\n<html><body>404 Not Found<br><br>This may be a DNS problem or the page you were looking for doesn't exist.</body></html>\r\n";
 				generateResponse(channel, notFound);
 				return null;
-
 			}
-
-//			StatisticsFilter.getInstance().filter(message);
 			NewStatisticsFilter.getInstance().filter(message);
-
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			if (channel.isOpen())
 				channel.register(key.selector(), SelectionKey.OP_WRITE);
@@ -155,7 +146,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		ProxyConnection conn = proxyconnections.get(channel);
 		SocketChannel receiver = conn.getOppositeChannel(channel);
 		ByteBuffer buf = conn.getBuffer(channel);
-		
+
 		if (receiver == null || !receiver.isOpen())
 			return;
 
@@ -173,8 +164,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			try {
 				receiver.write(pHeadersBuf);
 			} catch (ClosedChannelException e) {
-				System.out
-						.println("AAAAAAAALTA ESESIO TIRO EL GUACHIN GATO ESE");
+				System.out.println("Closed Channel Exception");
 			}
 			message.finishWithLeftHeaders();
 		}
@@ -184,7 +174,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 				+ receiver.socket().getInetAddress() + ":"
 				+ receiver.socket().getPort());
 
-		buf.compact(); // Make room for more data to be read in
+		buf.compact();
 		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver
 																		// will
 																		// write
