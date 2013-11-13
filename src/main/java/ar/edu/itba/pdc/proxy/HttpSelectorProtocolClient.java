@@ -96,7 +96,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			}
 
 //			StatisticsFilter.getInstance().filter(message);
-//			NewStatisticsFilter.getInstance().filter(message);
+			NewStatisticsFilter.getInstance().filter(message);
 
 			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);

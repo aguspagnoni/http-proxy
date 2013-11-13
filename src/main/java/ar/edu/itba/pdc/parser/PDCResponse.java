@@ -52,7 +52,7 @@ public class PDCResponse extends Message {
 
 	public String getData() {
 		if (this.data == null)
-			return " - " + '\n';
+			return "\n";
 		return this.data;
 	}
 

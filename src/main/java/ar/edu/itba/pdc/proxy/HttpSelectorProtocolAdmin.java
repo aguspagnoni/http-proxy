@@ -38,7 +38,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 		if (bytesRead > 0) {
 			try {
 				PDCRequest request;
-				
+
 				request = (PDCRequest) parser.parse(
 						channelBuffers.getBuffer(BufferType.read),
 						channelBuffers.getRequest());
@@ -53,15 +53,20 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 							+ response.getBody() + '\n';
 					s.write(ByteBuffer.wrap(resp.getBytes()));
 					s.write(ByteBuffer.wrap(response.getData().getBytes()));
-					
+
 					list.put(s, new ChannelBuffers());
 					channelBuffers.setRequest(new PDCRequest());
 				}
 			} catch (BadSyntaxException e) {
-				logger.info("[AdminHandler] Bad syntax");
-				s.write(ByteBuffer.wrap("BAD SYNTAX\n".getBytes()));
+				logger.info("[AdminHandler] Command Error");
+				s.write(ByteBuffer.wrap("Error Admin Handler. Disconnected\n"
+						.getBytes()));
+				s.close();
+				key.cancel();
+				return null;
+
 			} catch (Exception e) {
-				logger.info("[AdminHandler] Lost connection with the admin");
+				logger.info("[AdminHandler] Unexpected Error. Lost connection with the admin");
 				s.close();
 				key.cancel();
 				return null;

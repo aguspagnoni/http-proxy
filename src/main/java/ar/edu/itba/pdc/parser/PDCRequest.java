@@ -31,19 +31,13 @@ public class PDCRequest extends Message {
 				BooleanCommandExecutor.getInstance());
 		commandTypes.put("enablestatistics",
 				BooleanCommandExecutor.getInstance());
+		commandTypes.put("enablefilter", BooleanCommandExecutor.getInstance());
+		commandTypes.put("disablefilter", BooleanCommandExecutor.getInstance());
 		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
 		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
 		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
 		commandTypes.put("getstatisticsjson", GetCommandExecutor.getInstance());
-		// commandTypes.put("transformation", );
-		// RemoveFromListCommandExecutor.getInstance();
 		commandTypes.put("authorization", AuthService.getInstance());
-
-		// commandTypes.put("interval", ValueCommandExecutor.getInstance());
-		// commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
-
-		commandTypes.put("enablefilter", BooleanCommandExecutor.getInstance());
-		commandTypes.put("disablefilter", BooleanCommandExecutor.getInstance());
 
 	}
 
@@ -66,7 +60,7 @@ public class PDCRequest extends Message {
 	}
 
 	public PDCResponse parseMessage() {
-		
+		CommandExecutor c = null;
 		if (version == null || operation == null || param == null)
 			return new PDCResponse(404, "pdc/1.0",
 					"Bad Request. Try [Method] [OPERATION] [VERSION]");
@@ -77,7 +71,10 @@ public class PDCRequest extends Message {
 			return new PDCResponse(401, "PDC/1.0", "Unauthorized");
 		}
 
-		return takeActions();
+		String command = operation + param;
+		if ((c = commandTypes.get(command)) == null)
+			return new PDCResponse(404, "PDC/1.0", "Bad Syntax");
+		return takeActions(c);
 	}
 
 	/**
@@ -89,28 +86,21 @@ public class PDCRequest extends Message {
 	 * @throws BadSyntaxException
 	 */
 
-	private PDCResponse takeActions() throws BadSyntaxException {
+	private PDCResponse takeActions(CommandExecutor c)
+			throws BadSyntaxException {
 		PDCResponse responseToAdmin = null;
 		String password;
 		password = headers.get("authorization");
-		responseToAdmin = commandTypes.get("authorization").execute("user",
-				password);
-		if (responseToAdmin != null) {
-			return responseToAdmin;
-		}
-		if (operation.equals("get")) {
-			responseToAdmin = commandTypes.get(operation + param).execute(
-					operation, param);
+		if (password.isEmpty()) {
+			responseToAdmin = new PDCResponse(200, "PDC/1.0", "Password Empty");
 		} else {
-			if (operation.equals("filter")) {
-				responseToAdmin = commandTypes.get("filter").execute(operation,
-						param);
-			} else {
-				CommandExecutor c = commandTypes.get(operation + param);
-				if (c != null)
-					responseToAdmin = c.execute(operation, param);
+			PDCResponse r = commandTypes.get("authorization").execute("user",
+					password);
+			if (r != null) {
+				return new PDCResponse(200, "PDC/1.0", "Password Incorrect");
 			}
 		}
+		responseToAdmin = c.execute(operation, param);
 		if (responseToAdmin != null) {
 			commandManager.saveFile();
 		} else {
