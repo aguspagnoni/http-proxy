@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
+import ar.edu.itba.pdc.parser.HttpResponse;
 import ar.edu.itba.pdc.parser.Message;
 
 public class StatisticsFilter implements Filter {
@@ -128,7 +129,7 @@ public class StatisticsFilter implements Filter {
 			}
 			globalTotalByteTransfers += userTotalBytesTransfered;
 			if (userTotalAccesses != 0 || userTotalBytesTransfered != 0) {
-				ans += "Estadistica del Usuario: " + ps.clientaddr + "\n\n";
+				ans += "Estadistica del StatusCode: " + ps.statuscode + "\n\n";
 				ans += "Accesos totales del usuario:    " + userTotalAccesses
 						+ "\n";
 				ans += "Bytes transferidos del usuario: "
@@ -138,8 +139,8 @@ public class StatisticsFilter implements Filter {
 
 				ans += printHistogram(userAccessByInterval, currInterval,
 						ACCESS_UNIT);
-				ans += "Histograma de TRANSFERENCIA del usuario: "
-						+ ps.clientaddr + "\nINTERVALO (" + interval / 60000
+				ans += "Histograma de TRANSFERENCIA del StatusCode: "
+						+ ps.statuscode + "\nINTERVALO (" + interval / 60000
 						+ " mins)\t" + "UNIDAD (" + byteUnit + " bytes)\n";
 				;
 				ans += printHistogram(userByteTransferByInterval, currInterval,
@@ -159,12 +160,12 @@ public class StatisticsFilter implements Filter {
 	}
 
 	public String executeLatest() {
-		String ans = "Usuarios receientemente activos:\n\n";
+		String ans = "Status code receientemente activos:\n\n";
 		int currInterval = getCurrentInterval();
 
 		for (PersonalStatistic ps : usersStatistics.values()) {
 			if (ps.bytesBetweenIntervals.containsKey(currInterval)) {
-				ans += ps.clientaddr + "\n";
+				ans += ps.statuscode + "\n";
 			}
 		}
 		return ans
@@ -211,10 +212,10 @@ public class StatisticsFilter implements Filter {
 
 		Map<Integer, Integer> accessBetweenIntervals = new HashMap<Integer, Integer>();
 		Map<Integer, Integer> bytesBetweenIntervals = new HashMap<Integer, Integer>();
-		String clientaddr = null;
+		int statuscode;
 
-		PersonalStatistic(String clientaddr) {
-			this.clientaddr = clientaddr;
+		PersonalStatistic(int statuscode) {
+			this.statuscode = statuscode;
 		}
 
 		private void applyFilter(Message m) {
@@ -235,16 +236,21 @@ public class StatisticsFilter implements Filter {
 	/* fin clase interna */
 
 	public boolean filter(Message m) {
+
 		String s = ConfigurationCommands.getInstance()
 				.getProperty("statistics");
 		if (s != null && s.equals("on")) {
-			String clientaddr;
-			clientaddr = m.getFrom(); // TODO DEFINIR
-			if (!usersStatistics.containsKey(clientaddr)) {
-				usersStatistics.put(clientaddr, new PersonalStatistic(
-						clientaddr));
+			if (m.getClass().equals(HttpResponse.class)) {
+				int statuscode;
+				statuscode = ((HttpResponse) m).getCode(); // TODO DEFINIR
+				if (!usersStatistics.containsKey(statuscode)) {
+					usersStatistics.put(statuscode, new PersonalStatistic(
+							statuscode));
+				}
+				usersStatistics.get(statuscode).applyFilter(m);
+
 			}
-			usersStatistics.get(clientaddr).applyFilter(m);
+
 			return true; // TODO ?????????
 
 		}

@@ -7,7 +7,7 @@ import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.parser.Message;
 
 public class TransformationFilter implements Filter {
-	private Map<Character, Character> changes;
+	private Map<Character, String> changes;
 	private static TransformationFilter instance = null;
 
 	public static TransformationFilter getInstance() {
@@ -17,22 +17,26 @@ public class TransformationFilter implements Filter {
 	}
 
 	private TransformationFilter() {
-		changes = new HashMap<Character, Character>();
-		changes.put('a', '4');
-		changes.put('e', '3');
-		changes.put('i', '1');
-		changes.put('o', '0');
-		changes.put('c', '<');
+		changes = new HashMap<Character, String>();
+		changes.put('a', "4");
+		changes.put('e', "3");
+		changes.put('i', "1");
+		changes.put('o', "0");
+		changes.put('c', "<");
 	}
 
 	public boolean filter(Message m) {
-		String s = ConfigurationCommands.getInstance().getProperty(
-				"filter");
+		String s = ConfigurationCommands.getInstance().getProperty("filter");
 		return s != null && s.equals("on");
 	}
 
-	public byte changeByte(byte b) {
-		return (byte) ((char) changes.get(b));
+	public String changeByte(byte b) {
+		System.out.println(((char) b));
+		if (changes.get((char) b) != null) {
+			System.out.println((changes.get((char) b)));
+		}
+		String s = "";
+		s = s + (char) b;
+		return changes.get((char) b) != null ? changes.get((char) (b)) : s;
 	}
-
 }

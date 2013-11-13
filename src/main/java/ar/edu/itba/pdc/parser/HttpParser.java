@@ -79,16 +79,21 @@ public class HttpParser {
 			case Body:
 				TransformationFilter tfilter = TransformationFilter
 						.getInstance();
+				String contentType = message.headers.get("content-type");
+				// System.out.println(contentType);
 				if (message.getClass().equals(HttpResponse.class)
-						&& message.headers.get("content-type").contains(
-								"text/plain")
-						&& !message.headers.containsKey("content-encoding")
+
+				&& !message.headers.containsKey("content-encoding")
+						&& contentType != null
+						&& contentType.equals("text-plain")
 						&& tfilter.filter(message)) {
 					while (readBuffer.hasRemaining()
 							&& (b = readBuffer.get()) != -1
-							&& !message.isFinished())
+							&& !message.isFinished()) {
+						String changedByte = tfilter.changeByte(b);
 						readBuffer.put(readBuffer.position() - 1,
-								tfilter.changeByte(b));
+								changedByte.getBytes()[0]);
+					}
 				} else
 					while (readBuffer.hasRemaining()
 							&& (b = readBuffer.get()) != -1

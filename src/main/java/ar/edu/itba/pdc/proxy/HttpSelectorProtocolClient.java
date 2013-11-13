@@ -10,10 +10,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.HashMap;
-import java.util.Map;
 
 import ar.edu.itba.pdc.filters.StatisticsFilter;
-import ar.edu.itba.pdc.filters.TransformationFilter;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.HttpResponse;
@@ -23,8 +21,8 @@ import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 public class HttpSelectorProtocolClient implements TCPProtocol {
 
 	private HashMap<SocketChannel, ProxyConnection> proxyconnections = new HashMap<SocketChannel, ProxyConnection>();
-	private HTTPProxyLogger logger= HTTPProxyLogger.getInstance();
-	
+	private HTTPProxyLogger logger = HTTPProxyLogger.getInstance();
+
 	public HttpSelectorProtocolClient(int bufSize) {
 	}
 
@@ -39,23 +37,27 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		// Client socket channel has pending data
 		SocketChannel channel = (SocketChannel) key.channel();
 		ProxyConnection conn = proxyconnections.get(channel);
-		
+
 		ByteBuffer buf = conn.getBuffer(channel);
 		long bytesRead = 0;
 		try {
 			bytesRead = channel.read(buf);
-//			System.out.println(new String(buf.array(), 0, 100));
+			// System.out.println(new String(buf.array(), 0, 100));
 		} catch (IOException e) {
 			System.out.println("\nfallo el read");
 			e.printStackTrace();
 			return null;
 		}
-		
-		logger.info("\n[READ] " + bytesRead + " from "+ channel.socket().getInetAddress() + ":"	+ channel.socket().getPort());
+
+		logger.info("\n[READ] " + bytesRead + " from "
+				+ channel.socket().getInetAddress() + ":"
+				+ channel.socket().getPort());
 		SocketChannel server = conn.getServer();
 		/* ----------- OS SEND CLOSE ----------- */
 		if (bytesRead == -1) {
-			logger.info("\n[SENT CLOSE] cliente "+ channel.socket().getInetAddress() + ":"+ channel.socket().getPort());
+			logger.info("\n[SENT CLOSE] cliente "
+					+ channel.socket().getInetAddress() + ":"
+					+ channel.socket().getPort());
 			if (!conn.isClient(channel)) { // is server remove from connections
 				proxyconnections.remove(channel);
 				conn.resetServer();
@@ -63,31 +65,37 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			channel.close();
 			key.cancel();
 			conn.resetIncompleteMessage();
-		} 
-		/* ----------- SOMETHING TO READ ----------- */ 
+		}
+		/* ----------- SOMETHING TO READ ----------- */
 		if (bytesRead > 0) {
-			
+
 			/* ----------- PARSEO DE REQ/RESP ----------- */
-			
+
 			Message message = conn.getMessage(channel);
 			message.increaseAmountRead((int) bytesRead);
-			message.setFrom("client" + channel.socket().getInetAddress());
+			message.setFrom(channel.socket().getInetAddress().toString());
 
 			SocketChannel serverchannel = server;
-			if (conn.isClient(channel) && message.getState() != ParsingState.Body) {
+			if (conn.isClient(channel)
+					&& message.getState() != ParsingState.Body) {
 				return null;
 			}
-			
+
 			/* ----------- CONEXION A SERVIDOR DESTINO ----------- */
 			try {
-				serverchannel = connectToRemoteServer(conn, message, serverchannel);
-			} catch (UnresolvedAddressException e) { //TODO HACERLO DE LA FORMA BIEN. AGARRANDOLO DE UN ARCHIVO
+				serverchannel = connectToRemoteServer(conn, message,
+						serverchannel);
+			} catch (UnresolvedAddressException e) { // TODO HACERLO DE LA FORMA
+														// BIEN. AGARRANDOLO DE
+														// UN ARCHIVO
 				String notFound = "HTTP/1.1 404 BAD REQUEST\r\n\r\n<html><body>404 Not Found<br><br>This may be a DNS problem or the page you were looking for doesn't exist.</body></html>\r\n";
 				generateResponse(channel, notFound);
 				return null;
+
 			}
-			
-			
+
+			StatisticsFilter.getInstance().filter(message);
+
 			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			if (channel.isOpen())
@@ -127,13 +135,14 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			serverchannel.configureBlocking(false);
 
 			int port = uri.getPort() == -1 ? 80 : uri.getPort();
-			
-				if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
-						port))) {
-					while (!serverchannel.finishConnect());
-//						System.out.println();
-				}
-			
+
+			if (!serverchannel.connect(new InetSocketAddress(uri.getHost(),
+					port))) {
+				while (!serverchannel.finishConnect())
+					;
+				// System.out.println();
+			}
+
 			conn.setServer(serverchannel);
 			proxyconnections.put(serverchannel, conn);
 		}
@@ -146,29 +155,38 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 		ProxyConnection conn = proxyconnections.get(channel);
 		SocketChannel receiver = conn.getOppositeChannel(channel);
 		ByteBuffer buf = conn.getBuffer(channel);
-	
+
 		Message message = conn.getIncompleteMessage();
 		ByteBuffer pHeadersBuf;
 		int byteswritten = 0;
-		
-		if (message != null && (pHeadersBuf = message.getPartialHeadersBuffer()) != null) { // Headers came in different reads. 
+
+		if (message != null
+				&& (pHeadersBuf = message.getPartialHeadersBuffer()) != null) { // Headers
+																				// came
+																				// in
+																				// different
+																				// reads.
 			pHeadersBuf.flip();
 			try {
 				receiver.write(pHeadersBuf);
 			} catch (ClosedChannelException e) {
-				System.out.println("AAAAAAAALTA ESESIO TIRO EL GUACHIN GATO ESE");
+				System.out
+						.println("AAAAAAAALTA ESESIO TIRO EL GUACHIN GATO ESE");
 			}
 			message.finishWithLeftHeaders();
 		}
 		byteswritten = receiver.write(buf);
-		
+
 		logger.info("\n[WRITE] " + byteswritten + " to "
 				+ receiver.socket().getInetAddress() + ":"
 				+ receiver.socket().getPort());
 
-
 		buf.compact(); // Make room for more data to be read in
-		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver will write us back
+		receiver.register(key.selector(), SelectionKey.OP_READ, conn); // receiver
+																		// will
+																		// write
+																		// us
+																		// back
 		key.interestOps(SelectionKey.OP_READ); // Sender has finished writing
 
 	}
