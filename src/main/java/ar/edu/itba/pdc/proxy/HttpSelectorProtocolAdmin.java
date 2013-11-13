@@ -77,12 +77,6 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 	}
 
 	public void handleWrite(SelectionKey key) throws IOException {
-		SocketChannel s = (SocketChannel) key.channel();
-		ByteBuffer wrBuffer = list.get(s).getBuffer(BufferType.write);
-		wrBuffer.flip();
-		s.write(wrBuffer);
-		wrBuffer.compact();
-		s.register(key.selector(), SelectionKey.OP_READ);
-		key.interestOps(SelectionKey.OP_READ);
+
 	}
 }
