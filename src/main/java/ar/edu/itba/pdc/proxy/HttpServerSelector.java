@@ -46,7 +46,7 @@ public class HttpServerSelector {
 		adminChannel.register(selector, SelectionKey.OP_ACCEPT);
 		handlerMap.put(adminChannel, adminHandler);
 
-		/* Create Protocol and runnnnn */
+		/* Create Protocol  */
 		// TCPProtocol protocol = new HttpSelectorProtocol(BUFSIZE);
 		while (!Thread.interrupted()) {
 			if (selector.select(TIMEOUT) == 0) {
