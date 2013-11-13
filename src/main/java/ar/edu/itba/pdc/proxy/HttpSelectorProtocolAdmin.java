@@ -9,9 +9,7 @@ import java.util.Map;
 
 import ar.edu.itba.pdc.exceptions.BadSyntaxException;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
-import ar.edu.itba.pdc.parser.AdminParser;
 import ar.edu.itba.pdc.parser.HttpParser;
-import ar.edu.itba.pdc.parser.Message;
 import ar.edu.itba.pdc.parser.PDCRequest;
 import ar.edu.itba.pdc.parser.PDCResponse;
 import ar.edu.itba.pdc.parser.enumerations.ParsingState;
@@ -55,7 +53,9 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 							+ response.getBody() + '\n';
 					s.write(ByteBuffer.wrap(resp.getBytes()));
 					s.write(ByteBuffer.wrap(response.getData().getBytes()));
-					
+
+				} else {
+					request.setState(ParsingState.Head);
 				}
 			} catch (BadSyntaxException e) {
 				logger.info("[AdminHandler] Bad syntax");
