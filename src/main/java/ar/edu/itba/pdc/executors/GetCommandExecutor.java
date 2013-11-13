@@ -1,7 +1,6 @@
 package ar.edu.itba.pdc.executors;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.filters.NewStatisticsFilter;

@@ -38,7 +38,6 @@ public class ProxyConnection {
 	}
 
 	private void initialize() {
-		// filterList.add(StatisticsFilter.getInstance());
 		filterList.add(NewStatisticsFilter.getInstance());
 		filterList.add(TransformationFilter.getInstance());
 	}

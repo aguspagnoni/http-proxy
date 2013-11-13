@@ -18,14 +18,9 @@ import ar.edu.itba.pdc.parser.Message;
  */
 public class NewStatisticsFilter implements Filter {
 	private static final int DEFAULT_INTERVAL = 1000;
-	private static final int TRANSFER_UNIT = 50;
-	private static final int ACCESS_UNIT = 1;
 	private static int interval = DEFAULT_INTERVAL;
-	private static int byteUnit = TRANSFER_UNIT;
 	private static NewStatisticsFilter instance = null;
 
-	@SuppressWarnings("unused")
-	private boolean statisticsEnabled = false;
 	private long initialStatisticsTime = -1;
 
 	private int accesses = 0;
@@ -42,8 +37,7 @@ public class NewStatisticsFilter implements Filter {
 		if (statusCode == null) {
 			statusCode = new HashMap<Integer, IntervalStatusCode>();
 			initialStatisticsTime = System.currentTimeMillis();
-			// setInterval(StupidAdminParser.getInterval()); // desde el archivo
-			// conf
+
 		}
 	}
 
@@ -110,14 +104,6 @@ public class NewStatisticsFilter implements Filter {
 			this.statusCode.put(statusCode, isc);
 
 		}
-	}
-
-	public void enableStatistics() {
-		statisticsEnabled = true;
-	}
-
-	public void disableStatistics() {
-		statisticsEnabled = false;
 	}
 
 	public boolean filter(Message m) {

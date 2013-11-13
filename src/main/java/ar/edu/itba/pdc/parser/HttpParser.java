@@ -2,7 +2,6 @@ package ar.edu.itba.pdc.parser;
 
 import java.nio.ByteBuffer;
 
-import ar.edu.itba.pdc.filters.Filter;
 import ar.edu.itba.pdc.filters.TransformationFilter;
 import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
@@ -11,6 +10,7 @@ public class HttpParser {
 	public HttpParser() {
 	}
 
+	@SuppressWarnings("incomplete-switch")
 	public Message parse(ByteBuffer readBuffer, Message message)
 			throws InvalidMessageException {
 
@@ -26,7 +26,6 @@ public class HttpParser {
 			switch (message.state) {
 			case Head:
 
-				// message.increaseHeadersLength(readBuffer.remaining());
 				while ((b = readBuffer.get()) != '\n'
 						&& readBuffer.hasRemaining())
 					auxBuf[i++] = b;
@@ -80,7 +79,6 @@ public class HttpParser {
 				TransformationFilter tfilter = TransformationFilter
 						.getInstance();
 				String contentType = message.headers.get("content-type");
-				// System.out.println(contentType);
 				if (message.getClass().equals(HttpResponse.class)
 
 				&& !message.headers.containsKey("content-encoding")
