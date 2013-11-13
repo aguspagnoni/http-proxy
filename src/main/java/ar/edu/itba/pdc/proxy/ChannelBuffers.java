@@ -54,4 +54,8 @@ public class ChannelBuffers {
 	public PDCRequest getRequest() {
 		return this.req;
 	}
+	
+	public void setRequest(PDCRequest req) {
+		this.req = req;
+	}
 }

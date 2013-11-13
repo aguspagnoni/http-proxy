@@ -38,7 +38,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 		if (bytesRead > 0) {
 			try {
 				PDCRequest request;
-
+				
 				request = (PDCRequest) parser.parse(
 						channelBuffers.getBuffer(BufferType.read),
 						channelBuffers.getRequest());
@@ -53,7 +53,9 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 							+ response.getBody() + '\n';
 					s.write(ByteBuffer.wrap(resp.getBytes()));
 					s.write(ByteBuffer.wrap(response.getData().getBytes()));
-
+					
+					list.put(s, new ChannelBuffers());
+					
 				}
 			} catch (BadSyntaxException e) {
 				logger.info("[AdminHandler] Bad syntax");

@@ -110,13 +110,11 @@ public class PDCRequest extends Message {
 					responseToAdmin = c.execute(operation, param);
 			}
 		}
-		this.state=ParsingState.Head;
 		if (responseToAdmin != null) {
 			commandManager.saveFile();
 		} else {
 			throw new BadSyntaxException();
 		}
-		this.state=ParsingState.Head;
 		return responseToAdmin;
 	}
 
