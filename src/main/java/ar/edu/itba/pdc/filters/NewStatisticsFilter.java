@@ -10,6 +10,11 @@ import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.HttpResponse;
 import ar.edu.itba.pdc.parser.Message;
 
+/**
+ * Filter that stores the statistics about flow message
+ * @author grupo 3
+ *
+ */
 public class NewStatisticsFilter implements Filter{
 	private static final int DEFAULT_INTERVAL = 120000; // 2 minutos en
 	// milisegundos
@@ -42,26 +47,48 @@ public class NewStatisticsFilter implements Filter{
 		}
 	}
 
+	/**
+	 * Get the proxy's accesses quantity
+	 * @return
+	 */
 	public int getAccesses() {
 		return this.accesses;
 	}
-
+	
+	/**
+	 * Get the transfered bytes' amount
+	 * @return
+	 */
 	public int gettxBytes() {
 		return this.txbytes;
 	}
 
+	/**
+	 * Get the histogram of status codes
+	 * @return
+	 */
 	public Map<Integer, IntervalStatusCode> getHistogram() {
 		return this.statusCode;
 	}
 	
+	/**
+	 * Registers a proxy's access
+	 */
 	public void access(){
 		accesses++;
 	}
 	
+	/**
+	 * Increments amount of transfered bytes
+	 */
 	public void incTxBytes(int amount){
 		txbytes=txbytes+amount;
 	}
 
+	/**
+	 * Register a statusCode
+	 * @param statusCode
+	 */
 	public void addStatusCodeCounter(int statusCode) {
 		if (this.statusCode.containsKey(statusCode)) {
 			
@@ -77,16 +104,6 @@ public class NewStatisticsFilter implements Filter{
 	}
 	
 
-
-
-	public void setInterval(int minutes) {
-		interval = minutes * 60 * 1000;
-	}
-
-	public void setByteUnit(int byteUnit) {
-		this.byteUnit = byteUnit;
-	}
-
 	public void enableStatistics() {
 		statisticsEnabled = true;
 	}
@@ -94,12 +111,6 @@ public class NewStatisticsFilter implements Filter{
 	public void disableStatistics() {
 		statisticsEnabled = false;
 	}
-
-	private int getCurrentInterval() {
-		return (int) ((System.currentTimeMillis() - initialStatisticsTime) / interval);
-	}
-
-	
 
 	public boolean filter(Message m) {
 		String s = ConfigurationCommands.getInstance()
@@ -125,6 +136,11 @@ public class NewStatisticsFilter implements Filter{
 
 	}
 	
+	/**
+	 * 
+	 * @author grupo 3
+	 *
+	 */
 	public static class IntervalStatusCode{
 		Map<Integer,Integer> statuscodeMapping= new HashMap<Integer, Integer>();
 		
