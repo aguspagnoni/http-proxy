@@ -17,7 +17,6 @@ import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 public class HttpSelectorProtocolAdmin implements TCPProtocol {
 
 	private Map<SocketChannel, ChannelBuffers> list = new HashMap<SocketChannel, ChannelBuffers>();
-	private boolean logged = false;
 	private HttpParser parser;
 	private HTTPProxyLogger logger = HTTPProxyLogger.getInstance();
 
@@ -27,7 +26,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 	}
 
 	public void handleAccept(SocketChannel admClntChan) throws IOException {
-		// logger.info("New admin connected");
+		logger.info("[Admin Handler] Admin Connected");
 		list.put(admClntChan, new ChannelBuffers());
 	}
 
@@ -83,7 +82,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 		wrBuffer.flip();
 		s.write(wrBuffer);
 		wrBuffer.compact();
-		s.register(key.selector(), SelectionKey.OP_READ); // receiver
+		s.register(key.selector(), SelectionKey.OP_READ);
 		key.interestOps(SelectionKey.OP_READ);
 	}
 }

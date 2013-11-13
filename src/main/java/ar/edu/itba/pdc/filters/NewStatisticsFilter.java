@@ -132,17 +132,13 @@ public class NewStatisticsFilter implements Filter {
 					this.access();
 					this.incTxBytes(m.getAmountRead());
 				}
-			}
-			if (m.getClass().equals(HttpRequest.class)) {
+			} else if (m.getClass().equals(HttpRequest.class)) {
 				this.access();
 				this.incTxBytes(m.getAmountRead());
 			}
-
 			return true;
-
 		}
 		return false;
-
 	}
 
 	/**
