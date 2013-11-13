@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
-import ar.edu.itba.pdc.exceptions.BadSyntaxException;
+import ar.edu.itba.pdc.exceptions.AdminException;
 import ar.edu.itba.pdc.executors.AuthService;
 import ar.edu.itba.pdc.executors.BooleanCommandExecutor;
 import ar.edu.itba.pdc.executors.CommandExecutor;
@@ -78,7 +78,7 @@ public class PDCRequest extends Message {
 	 */
 
 	private PDCResponse takeActions(CommandExecutor c)
-			throws BadSyntaxException {
+			throws AdminException {
 		PDCResponse responseToAdmin = null;
 		String password;
 		password = headers.get("authorization");
@@ -95,7 +95,7 @@ public class PDCRequest extends Message {
 		if (responseToAdmin != null) {
 			commandManager.saveFile();
 		} else {
-			throw new BadSyntaxException();
+			throw new AdminException();
 		}
 		return responseToAdmin;
 	}

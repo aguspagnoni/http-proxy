@@ -7,7 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
 
-import ar.edu.itba.pdc.exceptions.BadSyntaxException;
+import ar.edu.itba.pdc.exceptions.AdminException;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.HttpParser;
 import ar.edu.itba.pdc.parser.PDCRequest;
@@ -56,7 +56,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 					list.put(s, new ChannelBuffers());
 					channelBuffers.setRequest(new PDCRequest());
 				}
-			} catch (BadSyntaxException e) {
+			} catch (AdminException e) {
 				logger.info("[AdminHandler] Command Error");
 				s.write(ByteBuffer.wrap("Error Admin Handler. Disconnected\n"
 						.getBytes()));

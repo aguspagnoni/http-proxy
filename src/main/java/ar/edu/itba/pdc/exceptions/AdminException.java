@@ -1,6 +1,6 @@
 package ar.edu.itba.pdc.exceptions;
 
 @SuppressWarnings("serial")
-public class BadSyntaxException extends RuntimeException {
+public class AdminException extends RuntimeException {
 
 }
