@@ -98,7 +98,6 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 //			StatisticsFilter.getInstance().filter(message);
 			NewStatisticsFilter.getInstance().filter(message);
 
-			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 			if (channel.isOpen())
 				channel.register(key.selector(), SelectionKey.OP_WRITE);
@@ -142,7 +141,6 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 					port))) {
 				while (!serverchannel.finishConnect())
 					;
-				// System.out.println();
 			}
 
 			conn.setServer(serverchannel);

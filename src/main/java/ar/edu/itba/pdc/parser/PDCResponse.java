@@ -57,7 +57,7 @@ public class PDCResponse extends Message {
 	}
 
 	public void appendData(String data) {
-		if (this.data == null ) {
+		if (this.data == null) {
 			this.data = data;
 		} else {
 			this.data = this.data + '\n' + data;
