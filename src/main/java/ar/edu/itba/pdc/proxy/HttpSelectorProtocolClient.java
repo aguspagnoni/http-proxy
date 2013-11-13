@@ -12,10 +12,8 @@ import java.nio.channels.UnresolvedAddressException;
 import java.util.HashMap;
 
 import ar.edu.itba.pdc.filters.NewStatisticsFilter;
-import ar.edu.itba.pdc.filters.StatisticsFilter;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.HttpRequest;
-import ar.edu.itba.pdc.parser.HttpResponse;
 import ar.edu.itba.pdc.parser.Message;
 import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
