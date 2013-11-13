@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ar.edu.itba.pdc.filters.Filter;
+import ar.edu.itba.pdc.filters.NewStatisticsFilter;
 import ar.edu.itba.pdc.filters.StatisticsFilter;
 import ar.edu.itba.pdc.filters.TransformationFilter;
 import ar.edu.itba.pdc.parser.HttpParser;
@@ -39,7 +40,8 @@ public class ProxyConnection {
 	}
 
 	private void initialize() {
-		filterList.add(StatisticsFilter.getInstance());
+		//filterList.add(StatisticsFilter.getInstance());
+		filterList.add(NewStatisticsFilter.getInstance());
 		filterList.add(TransformationFilter.getInstance());
 	}
 

@@ -34,6 +34,7 @@ public class PDCRequest extends Message {
 		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
 		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
 		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
+		commandTypes.put("getstatisticsjson", GetCommandExecutor.getInstance());
 		// commandTypes.put("transformation", );
 		// RemoveFromListCommandExecutor.getInstance();
 		commandTypes.put("authorization", AuthService.getInstance());

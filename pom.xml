@@ -20,5 +20,10 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.4.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20131018</version>
+		</dependency>
 	</dependencies>
 </project>

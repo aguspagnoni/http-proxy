@@ -11,6 +11,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.HashMap;
 
+import ar.edu.itba.pdc.filters.NewStatisticsFilter;
 import ar.edu.itba.pdc.filters.StatisticsFilter;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.HttpRequest;
@@ -95,6 +96,7 @@ public class HttpSelectorProtocolClient implements TCPProtocol {
 			}
 
 //			StatisticsFilter.getInstance().filter(message);
+//			NewStatisticsFilter.getInstance().filter(message);
 
 			// Indicate via key that reading/writing are both of interest now.
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
