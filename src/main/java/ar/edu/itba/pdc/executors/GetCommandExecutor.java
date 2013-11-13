@@ -4,9 +4,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
-import ar.edu.itba.pdc.filters.StatisticsFilter;
+import ar.edu.itba.pdc.filters.NewStatisticsFilter;
 import ar.edu.itba.pdc.parser.PDCResponse;
-import ar.edu.itba.pdc.proxy.HttpProxyData;
 
 public class GetCommandExecutor extends AbstractCommandExecutor {
 
@@ -28,13 +27,13 @@ public class GetCommandExecutor extends AbstractCommandExecutor {
 		String ans = null;
 		
 		if (value.equals("accesses")) {
-				ans=Integer.toString(StatisticsFilter.getInstance().getAccesses());
+				ans=Integer.toString(NewStatisticsFilter.getInstance().getAccesses());
 			
 		} else if(value.equals("txbytes")){
-			ans=Integer.toString(StatisticsFilter.getInstance().gettxBytes());
+			ans=Integer.toString(NewStatisticsFilter.getInstance().gettxBytes());
 		}
 		else if(value.equals("histogram")){
-			Map<Integer,Integer> hist=StatisticsFilter.getInstance().getHistogram();
+			Map<Integer,Integer> hist=NewStatisticsFilter.getInstance().getHistogram();
 			ans="";
 			for(Entry<Integer, Integer> pairs:hist.entrySet()){
 				ans=ans+pairs.getKey()+":"+pairs.getValue()+'\n';

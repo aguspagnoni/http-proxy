@@ -22,7 +22,7 @@ public class StatisticsFilter implements Filter {
 	private boolean statisticsEnabled = false;
 	private long initialStatisticsTime = -1;
 
-	private Map<String, PersonalStatistic> usersStatistics = null;
+	private Map<Integer, PersonalStatistic> usersStatistics = null;
 	private Map<Integer, Integer> statusCode = null;
 
 	public static StatisticsFilter getInstance() {
@@ -33,7 +33,7 @@ public class StatisticsFilter implements Filter {
 
 	private StatisticsFilter() {
 		if (usersStatistics == null) {
-			usersStatistics = new HashMap<String, PersonalStatistic>();
+			usersStatistics = new HashMap<Integer, PersonalStatistic>();
 			statusCode = new HashMap<Integer, Integer>();
 			initialStatisticsTime = System.currentTimeMillis();
 			// setInterval(StupidAdminParser.getInterval()); // desde el archivo

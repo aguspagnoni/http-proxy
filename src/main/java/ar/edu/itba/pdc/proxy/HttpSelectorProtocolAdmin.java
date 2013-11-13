@@ -55,7 +55,7 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 					s.write(ByteBuffer.wrap(response.getData().getBytes()));
 					
 					list.put(s, new ChannelBuffers());
-					
+					channelBuffers.setRequest(new PDCRequest());
 				}
 			} catch (BadSyntaxException e) {
 				logger.info("[AdminHandler] Bad syntax");
