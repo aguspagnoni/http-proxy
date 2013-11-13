@@ -29,19 +29,18 @@ public class AuthService extends AbstractCommandExecutor {
 	}
 
 	public PDCResponse execute(String username, String password) {
-
-		return (checkAuth(username, password)) ? new PDCResponse(200,
-				"PDC/1.0", "Logged In!") : null;
-		// else if (command.equals("changePassword"))
-		// return passwordChange(value);
+		username = "user"; // Future Extension
+		return (checkAuth(username, password)) ? null : new PDCResponse(200,
+				"PDC/1.0", "Wrong Auth ");
 	}
 
 	private boolean checkAuth(String username, String password) {
 		if (username.equals(this.username) && password.equals(this.password)) {
-			// getLogger().info("Administrator logged in");
+			getLogger().info("[Admin Handler] Administrator logged in");
 			return true;
 		}
-		// getLogger().info("Administrator authorization rejected");
+		getLogger()
+				.info("[Admin Handler] Administrator authorization rejected");
 		return false;
 	}
 

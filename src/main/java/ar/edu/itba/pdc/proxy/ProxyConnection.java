@@ -48,12 +48,16 @@ public class ProxyConnection {
 		Message message = null;
 		try {
 			if (isClient(sender)) {
-				if (incompleteMessage == null || incompleteMessage.getClass().equals(HttpResponse.class))
+				if (incompleteMessage == null
+						|| incompleteMessage.getClass().equals(
+								HttpResponse.class))
 					incompleteMessage = new HttpRequest();
 				message = (HttpRequest) parser.parse(buf,
 						(HttpRequest) incompleteMessage);
 			} else {
-				if (incompleteMessage == null || incompleteMessage.getClass().equals(HttpRequest.class))
+				if (incompleteMessage == null
+						|| incompleteMessage.getClass().equals(
+								HttpRequest.class))
 					incompleteMessage = new HttpResponse();
 				message = (HttpResponse) parser.parse(buf, incompleteMessage);
 			}
@@ -62,7 +66,8 @@ public class ProxyConnection {
 			System.out.println(e);
 		}
 
-		if (message != null && !message.hasHeadersBuffered() && message.isFinished()) {
+		if (message != null && !message.hasHeadersBuffered()
+				&& message.isFinished()) {
 			resetIncompleteMessage();
 			return message;
 		} else
@@ -161,7 +166,7 @@ public class ProxyConnection {
 	public void setClientbuf(ByteBuffer clientbuf) {
 		this.clientbuf = clientbuf;
 	}
-	
+
 	public Message getIncompleteMessage() {
 		return this.incompleteMessage;
 	}

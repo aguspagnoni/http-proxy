@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.parser.Message;
 
 public class StatisticsFilter implements Filter {
@@ -21,7 +22,8 @@ public class StatisticsFilter implements Filter {
 	private long initialStatisticsTime = -1;
 
 	private Map<String, PersonalStatistic> usersStatistics = null;
-	private Map<Integer,Integer> statusCode=null;
+	private Map<Integer, Integer> statusCode = null;
+
 	public static StatisticsFilter getInstance() {
 		if (instance == null)
 			instance = new StatisticsFilter();
@@ -31,14 +33,14 @@ public class StatisticsFilter implements Filter {
 	private StatisticsFilter() {
 		if (usersStatistics == null) {
 			usersStatistics = new HashMap<String, PersonalStatistic>();
-			statusCode=new HashMap<Integer, Integer>();
+			statusCode = new HashMap<Integer, Integer>();
 			initialStatisticsTime = System.currentTimeMillis();
 			// setInterval(StupidAdminParser.getInterval()); // desde el archivo
 			// conf
 		}
 	}
 
-	public int getAccesses(){
+	public int getAccesses() {
 		int currInterval = getCurrentInterval() + 1;
 		int globalTotalAccesses = 0;
 		int[] globalAccessByInterval = new int[currInterval];
@@ -55,15 +57,15 @@ public class StatisticsFilter implements Filter {
 			}
 			globalTotalAccesses += userTotalAccesses;
 		}
-		
+
 		return globalTotalAccesses;
 	}
-	
-	public int gettxBytes(){
+
+	public int gettxBytes() {
 		int currInterval = getCurrentInterval() + 1;
 		int globalTotalByteTransfers = 0;
 		int[] byteTransferByInterval = new int[currInterval];
-		
+
 		for (PersonalStatistic ps : usersStatistics.values()) {
 			int userTotalBytesTransfered = 0;
 			int[] userByteTransferByInterval = new int[currInterval];
@@ -78,25 +80,24 @@ public class StatisticsFilter implements Filter {
 			}
 			globalTotalByteTransfers += userTotalBytesTransfered;
 		}
-		
+
 		return globalTotalByteTransfers;
 	}
-	
-	public Map<Integer,Integer> getHistogram(){
+
+	public Map<Integer, Integer> getHistogram() {
 		return this.statusCode;
 	}
-	
-	public void addStatusCodeCounter(int statusCode){
-		if(this.statusCode.containsKey(statusCode)){
-			int quantity=this.statusCode.get(statusCode);
+
+	public void addStatusCodeCounter(int statusCode) {
+		if (this.statusCode.containsKey(statusCode)) {
+			int quantity = this.statusCode.get(statusCode);
 			quantity++;
 			this.statusCode.put(statusCode, quantity);
-		}
-		else{
+		} else {
 			this.statusCode.put(statusCode, 1);
 		}
 	}
-	
+
 	public String execute() {
 		int currInterval = getCurrentInterval() + 1;
 		int globalTotalAccesses = 0, globalTotalByteTransfers = 0;
@@ -234,13 +235,19 @@ public class StatisticsFilter implements Filter {
 	/* fin clase interna */
 
 	public boolean filter(Message m) {
-		String clientaddr;
-		clientaddr = m.getFrom(); // TODO DEFINIR
-		if (!usersStatistics.containsKey(clientaddr)) {
-			usersStatistics.put(clientaddr, new PersonalStatistic(clientaddr));
-		}
-		usersStatistics.get(clientaddr).applyFilter(m);
-		return true; // TODO ?????????
+		String s = ConfigurationCommands.getInstance()
+				.getProperty("statistics");
+		if (s != null && s.equals("enabled")) {
+			String clientaddr;
+			clientaddr = m.getFrom(); // TODO DEFINIR
+			if (!usersStatistics.containsKey(clientaddr)) {
+				usersStatistics.put(clientaddr, new PersonalStatistic(
+						clientaddr));
+			}
+			usersStatistics.get(clientaddr).applyFilter(m);
+			return true; // TODO ?????????
 
+		}
+		return false;
 	}
 }

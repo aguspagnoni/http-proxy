@@ -19,15 +19,17 @@ public class BooleanCommandExecutor extends AbstractCommandExecutor {
 	}
 
 	public PDCResponse execute(String command, String value) {
-		String valueLower = value.toLowerCase();
-		if (!valueLower.equals("enabled") && !valueLower.equals("disabled")) {
-			// getLogger().info("Syntax error trying to set property " +
-			// command);
+		String commandLower = command.toLowerCase();
+		if (!commandLower.equals("enable") && !commandLower.equals("disable")) {
 			return null;
 		}
-		// getLogger().info("Set property " + command + " with value " + value);
-		commandManager.setProperty(command, value);
-		return new PDCResponse(200, "PDC/1.0", "Transformations " + valueLower);
-		// return "OK";
+		getLogger().info(
+				"[Admin Handler]Set property " + value + " with value "
+						+ command + "d");
+		if (commandLower.equals("enable"))
+			commandManager.setProperty(value, "on");
+		else
+			commandManager.setProperty(value, "off");
+		return new PDCResponse(200, "PDC/1.0", value + " " + commandLower + "d");
 	}
 }
