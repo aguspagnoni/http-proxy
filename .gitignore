@@ -1,5 +1,6 @@
 *.class
-/logs/*
+logs/*.out
+*.out
 # Package Files #
 *.jar
 *.war
