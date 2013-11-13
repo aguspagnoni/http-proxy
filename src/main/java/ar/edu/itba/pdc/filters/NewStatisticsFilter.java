@@ -1,9 +1,7 @@
 package ar.edu.itba.pdc.filters;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.json.JSONObject;
 
@@ -12,6 +10,11 @@ import ar.edu.itba.pdc.parser.HttpRequest;
 import ar.edu.itba.pdc.parser.HttpResponse;
 import ar.edu.itba.pdc.parser.Message;
 
+/**
+ * Filter that stores the statistics about flow message
+ * @author grupo 3
+ *
+ */
 public class NewStatisticsFilter implements Filter{
 	private static final int DEFAULT_INTERVAL = 120000; // 2 minutos en
 	// milisegundos
@@ -44,26 +47,48 @@ public class NewStatisticsFilter implements Filter{
 		}
 	}
 
+	/**
+	 * Get the proxy's accesses quantity
+	 * @return
+	 */
 	public int getAccesses() {
 		return this.accesses;
 	}
-
+	
+	/**
+	 * Get the transfered bytes' amount
+	 * @return
+	 */
 	public int gettxBytes() {
 		return this.txbytes;
 	}
 
+	/**
+	 * Get the histogram of status codes
+	 * @return
+	 */
 	public Map<Integer, IntervalStatusCode> getHistogram() {
 		return this.statusCode;
 	}
 	
+	/**
+	 * Registers a proxy's access
+	 */
 	public void access(){
 		accesses++;
 	}
 	
+	/**
+	 * Increments amount of transfered bytes
+	 */
 	public void incTxBytes(int amount){
 		txbytes=txbytes+amount;
 	}
 
+	/**
+	 * Register a statusCode
+	 * @param statusCode
+	 */
 	public void addStatusCodeCounter(int statusCode) {
 		if (this.statusCode.containsKey(statusCode)) {
 			
@@ -79,76 +104,6 @@ public class NewStatisticsFilter implements Filter{
 	}
 	
 
-//	public String execute() {
-//		int currInterval = getCurrentInterval() + 1;
-//		int globalTotalAccesses = 0, globalTotalByteTransfers = 0;
-//		int[] globalAccessByInterval = new int[currInterval], byteTransferByInterval = new int[currInterval];
-//		String ans = "";
-//		Date date = new Date(System.currentTimeMillis());
-//		ans += "Estadistica del proxy - " + date + "\n\n";
-//
-//		for (PersonalStatistic ps : usersStatistics.values()) {
-//			int userTotalAccesses = 0, userTotalBytesTransfered = 0;
-//			int[] userAccessByInterval = new int[currInterval], userByteTransferByInterval = new int[currInterval];
-//
-//			for (Entry<Integer, Integer> access : ps.accessBetweenIntervals
-//					.entrySet()) {
-//				globalAccessByInterval[access.getKey()] += access.getValue();
-//				userAccessByInterval[access.getKey()] += access.getValue();
-//				userTotalAccesses += access.getValue();
-//			}
-//			globalTotalAccesses += userTotalAccesses;
-//
-//			for (Entry<Integer, Integer> bytesTransfered : ps.bytesBetweenIntervals
-//					.entrySet()) {
-//				byteTransferByInterval[bytesTransfered.getKey()] += bytesTransfered
-//						.getValue();
-//				userByteTransferByInterval[bytesTransfered.getKey()] += bytesTransfered
-//						.getValue();
-//				userTotalBytesTransfered += bytesTransfered.getValue();
-//			}
-//			globalTotalByteTransfers += userTotalBytesTransfered;
-//			if (userTotalAccesses != 0 || userTotalBytesTransfered != 0) {
-//				ans += "Estadistica del StatusCode: " + ps.statuscode + "\n\n";
-//				ans += "Accesos totales del usuario:    " + userTotalAccesses
-//						+ "\n";
-//				ans += "Bytes transferidos del usuario: "
-//						+ userTotalBytesTransfered + "\n";
-//				ans += "Histograma de ACCESOS del usuario: " + "\nINTERVALO ("
-//						+ interval / 60000 + " mins)\n";
-//
-//				ans += printHistogram(userAccessByInterval, currInterval,
-//						ACCESS_UNIT);
-//				ans += "Histograma de TRANSFERENCIA del StatusCode: "
-//						+ ps.statuscode + "\nINTERVALO (" + interval / 60000
-//						+ " mins)\t" + "UNIDAD (" + byteUnit + " bytes)\n";
-//				;
-//				ans += printHistogram(userByteTransferByInterval, currInterval,
-//						byteUnit);
-//			}
-//		}
-//		ans += "Estadistica General \n";
-//		ans += "ACCESOS totales al sistema: " + globalTotalAccesses + "\n";
-//		ans += "Bytes TRANSFERENCIA del sistema: " + globalTotalByteTransfers
-//				+ "\n";
-//		ans += "Histograma de accesos totales: \n";
-//		ans += printHistogram(globalAccessByInterval, currInterval, ACCESS_UNIT);
-//		ans += "Histograma de transferencias totales: \n";
-//		ans += printHistogram(byteTransferByInterval, currInterval, byteUnit);
-//		return ans
-//				+ "----------------------------------END OF MESSAGE------------------------------------------\n";
-//	}
-
-
-
-	public void setInterval(int minutes) {
-		interval = minutes * 60 * 1000;
-	}
-
-	public void setByteUnit(int byteUnit) {
-		this.byteUnit = byteUnit;
-	}
-
 	public void enableStatistics() {
 		statisticsEnabled = true;
 	}
@@ -156,12 +111,6 @@ public class NewStatisticsFilter implements Filter{
 	public void disableStatistics() {
 		statisticsEnabled = false;
 	}
-
-	private int getCurrentInterval() {
-		return (int) ((System.currentTimeMillis() - initialStatisticsTime) / interval);
-	}
-
-	
 
 	public boolean filter(Message m) {
 		String s = ConfigurationCommands.getInstance()
@@ -187,6 +136,11 @@ public class NewStatisticsFilter implements Filter{
 
 	}
 	
+	/**
+	 * 
+	 * @author grupo 3
+	 *
+	 */
 	public static class IntervalStatusCode{
 		Map<Integer,Integer> statuscodeMapping= new HashMap<Integer, Integer>();
 		

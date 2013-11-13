@@ -3,6 +3,11 @@ package ar.edu.itba.pdc.executors;
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.parser.PDCResponse;
 
+/**
+ * Executes the command to activate or desactivate a property.
+ * @author grupo 3
+ *
+ */
 public class BooleanCommandExecutor extends AbstractCommandExecutor {
 
 	private static BooleanCommandExecutor instance = null;
@@ -18,6 +23,11 @@ public class BooleanCommandExecutor extends AbstractCommandExecutor {
 		commandManager = ConfigurationCommands.getInstance();
 	}
 
+	/**
+	 * Enable/disable a property
+	 * @param command: "enable" or "disable"
+	 * @param value: property name
+	 */
 	public PDCResponse execute(String command, String value) {
 		String commandLower = command.toLowerCase();
 		if (!commandLower.equals("enable") && !commandLower.equals("disable")) {

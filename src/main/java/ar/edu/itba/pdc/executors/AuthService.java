@@ -5,6 +5,11 @@ import org.apache.commons.codec.binary.Base64;
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.parser.PDCResponse;
 
+/**
+ * Executes the authentication service ("authorization" header in PDC protocol)
+ * @author grupo 3
+ *
+ */
 public class AuthService extends AbstractCommandExecutor {
 
 	private static AuthService instance = null;
@@ -28,6 +33,9 @@ public class AuthService extends AbstractCommandExecutor {
 					.getBytes());
 	}
 
+	/**
+	 * Validates if username and password are correct.
+	 */
 	public PDCResponse execute(String username, String password) {
 		username = "user"; // Future Extension
 		return (checkAuth(username, password)) ? null : new PDCResponse(200,

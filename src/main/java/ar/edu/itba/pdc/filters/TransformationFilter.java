@@ -6,6 +6,11 @@ import java.util.Map;
 import ar.edu.itba.pdc.configuration.ConfigurationCommands;
 import ar.edu.itba.pdc.parser.Message;
 
+/**
+ * Filter that transform text/plain into 133t format
+ * @author grupo 3
+ *
+ */
 public class TransformationFilter implements Filter {
 	private Map<Character, String> changes;
 	private static TransformationFilter instance = null;
@@ -30,6 +35,11 @@ public class TransformationFilter implements Filter {
 		return s != null && s.equals("on");
 	}
 
+	/**
+	 * transform a byte into another one according to 133t format
+	 * @param b
+	 * @return
+	 */
 	public String changeByte(byte b) {
 		System.out.println(((char) b));
 		if (changes.get((char) b) != null) {
