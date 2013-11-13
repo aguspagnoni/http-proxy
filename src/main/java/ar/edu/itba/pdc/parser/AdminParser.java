@@ -18,32 +18,12 @@ public class AdminParser implements AdministratorParser {
 	private Map<String, CommandExecutor> commandTypes = new HashMap<String, CommandExecutor>();
 	private ConfigurationCommands commandManager;
 
-	public AdminParser() {
-		// commandManager = ConfigurationCommands.getInstance();
-		// // commandTypes.put("statistics",
-		// BooleanCommandExecutor.getInstance()); //que se supone que hace esto?
-		// commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
-		// commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
-		// commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
-		// commandTypes
-		// .put("transformation", BooleanCommandExecutor.getInstance());
-		// RemoveFromListCommandExecutor.getInstance();
-		// commandTypes.put("authentication", AuthService.getInstance());
-		//
-		// // commandTypes.put("interval", ValueCommandExecutor.getInstance());
-		// // commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
-		//
-		// commandTypes.put("addfilter", null);
-		// commandTypes.put("delfilter", null);
-	}
-
 	public Message parse(ByteBuffer readBuffer, PDCRequest message)
 			throws BadSyntaxException, InvalidMessageException {
 
 		if (message == null)
 			throw new InvalidMessageException();
 		byte[] auxBuf = ByteBuffer.allocate(8192).array();
-		// if (readBuffer.position() == 0)
 		readBuffer.flip();
 
 		byte b;
@@ -99,23 +79,24 @@ public class AdminParser implements AdministratorParser {
 				readBuffer.compact();
 				return null;
 			case Complete:
-				PDCResponse response = message.parseMessage(readBuffer, i); // aca
-																			// es
-																			// donde
-																			// se
-																			// hace
-																			// la
-																			// logica
-																			// del
-																			// parseo
-																			// y
-																			// se
-																			// ejecutan
-																			// los
-																			// comandos
+				// PDCResponse response = message.parseMessage(readBuffer, i);
+				// // aca
+				// es
+				// donde
+				// se
+				// hace
+				// la
+				// logica
+				// del
+				// parseo
+				// y
+				// se
+				// ejecutan
+				// los
+				// comandos
 				readBuffer.rewind();
 				readBuffer.clear();
-				return response;
+				// return response;
 			}
 		}
 	}

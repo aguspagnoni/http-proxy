@@ -13,6 +13,7 @@ import ar.edu.itba.pdc.executors.CommandExecutor;
 import ar.edu.itba.pdc.executors.GetCommandExecutor;
 import ar.edu.itba.pdc.executors.RemoveFromListCommandExecutor;
 import ar.edu.itba.pdc.executors.ValueCommandExecutor;
+import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class PDCRequest extends Message {
 
@@ -26,18 +27,23 @@ public class PDCRequest extends Message {
 	public PDCRequest() {
 
 		commandManager = ConfigurationCommands.getInstance();
-		// commandTypes.put("statistics", BooleanCommandExecutor.getInstance());
+		commandTypes.put("disablestatistics",
+				BooleanCommandExecutor.getInstance());
+		commandTypes.put("enablestatistics",
+				BooleanCommandExecutor.getInstance());
 		commandTypes.put("gethistogram", GetCommandExecutor.getInstance());
 		commandTypes.put("getaccesses", GetCommandExecutor.getInstance());
 		commandTypes.put("gettxbytes", GetCommandExecutor.getInstance());
 		// commandTypes.put("transformation", );
 		// RemoveFromListCommandExecutor.getInstance();
-		commandTypes.put("authentication", AuthService.getInstance());
+		commandTypes.put("authorization", AuthService.getInstance());
 
 		// commandTypes.put("interval", ValueCommandExecutor.getInstance());
 		// commandTypes.put("byteUnit", ValueCommandExecutor.getInstance());
 
-		commandTypes.put("filter", BooleanCommandExecutor.getInstance());
+		commandTypes.put("enablefilter", BooleanCommandExecutor.getInstance());
+		commandTypes.put("disablefilter", BooleanCommandExecutor.getInstance());
+
 	}
 
 	@Override
@@ -58,50 +64,19 @@ public class PDCRequest extends Message {
 		}
 	}
 
-	public PDCResponse parseMessage(ByteBuffer readBuffer, int bytesRead) {
-
+	public PDCResponse parseMessage() {
+		
+		if (version == null || operation == null || param == null)
+			return new PDCResponse(404, "pdc/1.0",
+					"Bad Request. Try [Method] [OPERATION] [VERSION]");
 		if (!version.equals("pdc/1.0")) {
 			return new PDCResponse(404, "pdc/1.0", "Wrong PDC Version");
-			// aca vendria error 404 NOT FOUND
 		}
-
-		if (operation != null && operation.equals("get")) {
-			if (param != null) {
-				if (!commandTypes.containsKey(operation + param)) {
-					return new PDCResponse(404, "PDC/1.0");
-					// aca vendria error 404 NOT FOUND
-				}
-				if (bytesRead != 0) {
-					return new PDCResponse(420, "PDC/1.0", "Corrupted Data"); // la
-																				// DATA
-																				// en
-																				// get
-					// tiene que estar
-					// vacia
-					// aca vendria error 420 CORRUPTED DATA
-				}
-
-			} else {
-				return new PDCResponse(400, "PDC/1.0", "BAD Request");
-				// 400 BAD REQUEST
-			}
-
-		} else if (operation != null && (operation.equals("filter"))) {
-			if (!commandTypes.containsKey(operation)) {
-				return new PDCResponse(404, "PDC/1.0", "Not found filter");
-				// aca vendria error 404 NOT FOUND
-			}
-			// if (bytesRead == 0) {
-			// return new PDCResponse(420, "PDC/1.0", "Corrupted data"); // la
-			// DATA no puede
-			// // estar vacia
-			// // aca vendria error 420 CORRUPTED DATA
-			// }
-
+		if (!headers.containsKey("authorization")) {
+			return new PDCResponse(401, "PDC/1.0", "Unauthorized");
 		}
 
 		return takeActions();
-
 	}
 
 	/**
@@ -115,48 +90,33 @@ public class PDCRequest extends Message {
 
 	private PDCResponse takeActions() throws BadSyntaxException {
 		PDCResponse responseToAdmin = null;
-		String user;
 		String password;
+		password = headers.get("authorization");
+		responseToAdmin = commandTypes.get("authorization").execute("user",
+				password);
+		if (responseToAdmin != null) {
+			return responseToAdmin;
+		}
 		if (operation.equals("get")) {
-			if (!logged)
-				return new PDCResponse(401, "PDC/1.0", "Not logged");
-
 			responseToAdmin = commandTypes.get(operation + param).execute(
 					operation, param);
 		} else {
-			if (operation.equals("authenticate")) {
-				String params[] = param.split(":");
-				if (params.length == 2) {
-					user = params[0].trim();
-					password = params[1].trim();
-				} else {
-					return new PDCResponse(400, "PDC/1.0", "Wrong Syntax");
-				}
-				// String auth = headers.get("authentication");
-				responseToAdmin = commandTypes.get("authentication").execute(
-						user, password); // no estamos
-											// contemplando el
-				// usuario,
-				// habría
-				// que ver de cambiarlo en el executor o
-				// ver
-				// cómo hacemos
-				if (responseToAdmin != null)
-					logged = true;
-				else
-					return new PDCResponse(200, "PDC/1.0", "Wrong password");
-			} else if (operation.equals("filter")) {
+			if (operation.equals("filter")) {
 				responseToAdmin = commandTypes.get("filter").execute(operation,
 						param);
+			} else {
+				CommandExecutor c = commandTypes.get(operation + param);
+				if (c != null)
+					responseToAdmin = c.execute(operation, param);
 			}
-
 		}
+		this.state=ParsingState.Head;
 		if (responseToAdmin != null) {
 			commandManager.saveFile();
 		} else {
 			throw new BadSyntaxException();
 		}
-
+		this.state=ParsingState.Head;
 		return responseToAdmin;
 	}
 

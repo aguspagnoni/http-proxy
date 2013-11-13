@@ -10,18 +10,21 @@ import java.util.Map;
 import ar.edu.itba.pdc.exceptions.BadSyntaxException;
 import ar.edu.itba.pdc.logger.HTTPProxyLogger;
 import ar.edu.itba.pdc.parser.AdminParser;
+import ar.edu.itba.pdc.parser.HttpParser;
+import ar.edu.itba.pdc.parser.Message;
 import ar.edu.itba.pdc.parser.PDCRequest;
 import ar.edu.itba.pdc.parser.PDCResponse;
+import ar.edu.itba.pdc.parser.enumerations.ParsingState;
 
 public class HttpSelectorProtocolAdmin implements TCPProtocol {
 
 	private Map<SocketChannel, ChannelBuffers> list = new HashMap<SocketChannel, ChannelBuffers>();
 	private boolean logged = false;
-	private AdminParser parser;
+	private HttpParser parser;
 	private HTTPProxyLogger logger = HTTPProxyLogger.getInstance();
 
 	public HttpSelectorProtocolAdmin(int bufSize) {
-		parser = new AdminParser();
+		parser = new HttpParser();
 
 	}
 
@@ -31,50 +34,40 @@ public class HttpSelectorProtocolAdmin implements TCPProtocol {
 	}
 
 	public SocketChannel handleRead(SelectionKey key) throws IOException {
-		// Client socket channel has pending data
 		SocketChannel s = (SocketChannel) key.channel();
 		ChannelBuffers channelBuffers = list.get(s);
 		int bytesRead = s.read(channelBuffers.getBuffer(BufferType.read));
-		try {
-			PDCResponse response;
-			if ((response = (PDCResponse) parser.parse(
-					channelBuffers.getBuffer(BufferType.read),
-					channelBuffers.getRequest())) != null) {
-				String resp = response.getVersion() + " "
-						+ Integer.toString(response.getCode()) + " "
-						+ response.getVerboseCode() + '\n' + response.getBody()
-						+ '\n';
+		if (bytesRead > 0) {
+			try {
+				PDCRequest request;
 
-				s.write(ByteBuffer.wrap(resp.getBytes()));
-				s.write(ByteBuffer.wrap(response.getData().getBytes()));
-				// if (logged || response.equals("PASSWORD OK\n")) {
-				// if (logged && response.equals("PASSWORD OK\n")) {
-				// response = null;
-				// // response = "ALREADY LOGGED\n";
-				// }
-				//
-				// logged = true;
-				// s.write(ByteBuffer.wrap(response.getBytes()));
-				// } else if (response.equals("INVALID PASSWORD\n")) {
-				// if (logged) {
-				// response = null;
-				// // response = "ALREADY LOGGED\n";
-				// }
-				// s.write(ByteBuffer.wrap(response.getBytes()));
-				// } else {
-				// s.write(ByteBuffer.wrap("Not logged in!\n".getBytes()));
-				// }
+				request = (PDCRequest) parser.parse(
+						channelBuffers.getBuffer(BufferType.read),
+						channelBuffers.getRequest());
+				if (request.getState() != ParsingState.Body) {
+					return null;
+				}
+				PDCResponse response = request.parseMessage();
+				if (response != null) {
+					String resp = response.getVersion() + " "
+							+ Integer.toString(response.getCode()) + " "
+							+ response.getVerboseCode() + '\n'
+							+ response.getBody() + '\n';
+					s.write(ByteBuffer.wrap(resp.getBytes()));
+					s.write(ByteBuffer.wrap(response.getData().getBytes()));
+					
+				}
+			} catch (BadSyntaxException e) {
+				logger.info("[AdminHandler] Bad syntax");
+				s.write(ByteBuffer.wrap("BAD SYNTAX\n".getBytes()));
+			} catch (Exception e) {
+				logger.info("[AdminHandler] Lost connection with the admin");
+				s.close();
+				key.cancel();
+				return null;
 			}
-		} catch (BadSyntaxException e) {
-			logger.info("Bad syntax");
-			s.write(ByteBuffer.wrap("BAD SYNTAX\n".getBytes()));
-		} catch (Exception e) {
-			logged = false;
-			// logger.error("Lost connection with the admin");
-			s.close();
-			key.cancel();
-			return null;
 		}
+
 		return s;
 
 	}
